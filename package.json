@@ -1,8 +1,11 @@
 {
     "name": "apotheke",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "JavaScript/TypeScript import organizer — prettier plugin + CLI",
     "type": "module",
+    "repository": {
+        "url": "https://github.com/mRaffaello/apotheke"
+    },
     "exports": {
         ".": "./dist/index.js"
     },
