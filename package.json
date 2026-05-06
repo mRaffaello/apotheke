@@ -1,0 +1,46 @@
+{
+    "name": "apotheke",
+    "version": "0.0.0",
+    "description": "JavaScript/TypeScript import organizer — prettier plugin + CLI",
+    "type": "module",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "apotheke": "./dist/cli.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:unit": "vitest run tests/unit",
+        "test:e2e": "vitest run tests/e2e/e2e.test.ts",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^20.5.3",
+        "@commitlint/config-conventional": "^20.5.3",
+        "@types/node": "^25.6.0",
+        "husky": "^9.1.7",
+        "prettier": "^3.8.3",
+        "tsup": "^8.5.1",
+        "vitest": "^4.1.5"
+    },
+    "peerDependencies": {
+        "prettier": ">=3"
+    },
+    "peerDependenciesMeta": {
+        "prettier": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "fast-glob": "^3.3.3",
+        "oxc-parser": "^0.129.0"
+    }
+}
