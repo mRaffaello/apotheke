@@ -11,13 +11,13 @@ Apotheke is an import organizer for JavaScript/TypeScript projects. This skill i
 
 Before doing anything else, determine whether this is a monorepo. Check for these signals at the working directory root:
 
-| File / field | Tool |
-|---|---|
-| `pnpm-workspace.yaml` | pnpm workspaces |
-| `turbo.json` | Turborepo |
-| `nx.json` | Nx |
-| `lerna.json` | Lerna |
-| `rush.json` | Rush |
+| File / field                             | Tool                    |
+| ---------------------------------------- | ----------------------- |
+| `pnpm-workspace.yaml`                    | pnpm workspaces         |
+| `turbo.json`                             | Turborepo               |
+| `nx.json`                                | Nx                      |
+| `lerna.json`                             | Lerna                   |
+| `rush.json`                              | Rush                    |
 | `package.json` with `"workspaces"` field | npm/yarn/bun workspaces |
 
 If any of these are present, it's a **monorepo**. Follow the monorepo path below. Otherwise follow the single-package path.
@@ -30,8 +30,8 @@ Proceed to Step 2 with the repo root as the single package root.
 
 1. Identify all package roots by reading the workspaces glob (e.g. `packages/*`, `apps/*`) from whichever workspace config is present. List them to the user.
 2. Ask: "Should I set up a shared root config that all packages inherit from, or configure each package independently?"
-   - **Shared root** (recommended): write a root `apotheke.config.mjs` with groups common across all packages; each package gets its own config with `extends: "../../apotheke.config.mjs"` that overrides or adds package-specific groups.
-   - **Independent**: each package gets its own self-contained config with no inheritance.
+    - **Shared root** (recommended): write a root `apotheke.config.mjs` with groups common across all packages; each package gets its own config with `extends: "../../apotheke.config.mjs"` that overrides or adds package-specific groups.
+    - **Independent**: each package gets its own self-contained config with no inheritance.
 3. Scan each package separately (Step 2 runs once per package root). Combine the findings to build the shared group set before writing configs.
 4. In Step 6, add scripts to each package's `package.json` scoped to that package's source folder. Optionally add a root-level script that runs prettier across all packages.
 
@@ -40,6 +40,7 @@ Proceed to Step 2 with the repo root as the single package root.
 For each package root (or just the single root), search for all `.ts`, `.tsx`, `.js`, `.jsx` files (excluding `node_modules`, `dist`, `.next`, `build`, `out`). Read a sample of files (up to 20 per package, spread across the directory tree) and extract the unique import specifiers.
 
 Pay attention to:
+
 - **Package imports**: `react`, `@tanstack/react-query`, `lucide-react`, etc.
 - **Path alias imports**: `@/components/...`, `~/lib/...`, `#utils/...`
 - **Relative path patterns**: which folders appear most — `hooks/`, `api/`, `components/`, `views/`, `pages/`, `utils/`, `lib/`, `stores/`, etc.
@@ -54,6 +55,7 @@ Look for `apotheke.config.mjs`, `apotheke.config.js`, or `apotheke.config.ts` at
 Based on what you found, propose a `groups` array. Use your judgment to create meaningful groups. Common patterns:
 
 - If the project uses React → group `react`, `react-dom`, `react-*`
+    > **Warning — `react-*` is greedy**: it will also match `react-hook-form`, `react-i18next`, `react-day-picker`, etc. Groups are matched in order and the first match wins. If you want those libraries in their own groups (Forms, i18n, Date), either list them in those groups _before_ the React group in the array, or narrow the React match to just `['react', 'react-dom']` without the wildcard.
 - If the project has `hooks/` folder → group `**/hooks/**`
 - If the project has `api/`, `services/`, `queries/` → group those paths + data-fetching libraries (react-query, swr, etc.)
 - If the project has `components/`, `ui/` → group those
@@ -68,6 +70,7 @@ Always propose a sensible **alias map** based on tsconfig `paths`.
 In a monorepo with a shared root config: put universal groups (React, external libraries) in the root config, and package-specific groups (internal paths, local components) in each package config.
 
 Present the proposed config clearly and ask the user:
+
 1. Are these groups right? Any to add, remove, or rename?
 2. Should named imports within a line be sorted alphabetically? (default: yes)
 3. Should there be blank lines between groups? (default: yes)
@@ -82,14 +85,14 @@ Wait for confirmation before proceeding.
 ```js
 // apotheke.config.mjs
 export default {
-  groups: [
-    // ... confirmed groups
-  ],
-  aliases: {
-    // ... from tsconfig paths
-  },
-  groupSeparator: true,
-  groupComments: true,
+    groups: [
+        // ... confirmed groups
+    ],
+    aliases: {
+        // ... from tsconfig paths
+    },
+    groupSeparator: true,
+    groupComments: true
 };
 ```
 
@@ -98,11 +101,11 @@ For a monorepo with a shared root:
 ```js
 // apps/web/apotheke.config.mjs
 export default {
-  extends: '../../apotheke.config.mjs',
-  groups: [
-    // package-specific groups only — root groups are inherited
-    { name: 'Local Components', match: ['**/components/**'] },
-  ],
+    extends: '../../apotheke.config.mjs',
+    groups: [
+        // package-specific groups only — root groups are inherited
+        { name: 'Local Components', match: ['**/components/**'] }
+    ]
 };
 ```
 
@@ -137,8 +140,8 @@ Check for `.prettierrc`, `.prettierrc.js`, `.prettierrc.json`, or `prettier.conf
 ```js
 // prettier.config.js  (or .prettierrc.js)
 module.exports = {
-  // ...existing options unchanged...
-  plugins: ['apotheke'],
+    // ...existing options unchanged...
+    plugins: ['apotheke']
 };
 ```
 
@@ -146,9 +149,15 @@ For JSON prettier configs (`.prettierrc` or `.prettierrc.json`):
 
 ```json
 {
-  "plugins": ["apotheke"]
+    "plugins": ["apotheke"]
 }
 ```
+
+> **Ordering is critical**: apotheke must be the **last** entry in `plugins`. It chains to the previous plugin's `preprocess` hook via `getBase()?.preprocess`, so any plugin listed after it will completely override apotheke's preprocess and imports will not be organized. If another prettier plugin (e.g. `prettier-plugin-tailwindcss`) is already present, place `"apotheke"` after it:
+>
+> ```json
+> { "plugins": ["prettier-plugin-tailwindcss", "apotheke"] }
+> ```
 
 ### 6d. Verify prettier version
 
@@ -160,12 +169,9 @@ Check that prettier v3 is installed (`"prettier": "^3"` in devDependencies). If 
 
 ```json
 {
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "apotheke --write",
-      "prettier --write"
-    ]
-  }
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": ["apotheke --write", "prettier --write"]
+    }
 }
 ```
 
@@ -175,10 +181,10 @@ With the prettier plugin wired up, a single `prettier --write` does everything. 
 
 ```json
 {
-  "scripts": {
-    "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx}'",
-    "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx}'"
-  }
+    "scripts": {
+        "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx}'",
+        "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx}'"
+    }
 }
 ```
 
@@ -186,10 +192,10 @@ Adjust the glob to match the project's source folder. In a monorepo, also add a 
 
 ```json
 {
-  "scripts": {
-    "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}' 'apps/*/src/**/*.{ts,tsx}'",
-    "format:check": "prettier --check 'packages/*/src/**/*.{ts,tsx}' 'apps/*/src/**/*.{ts,tsx}'"
-  }
+    "scripts": {
+        "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}' 'apps/*/src/**/*.{ts,tsx}'",
+        "format:check": "prettier --check 'packages/*/src/**/*.{ts,tsx}' 'apps/*/src/**/*.{ts,tsx}'"
+    }
 }
 ```
 
@@ -202,11 +208,11 @@ If yes, the prettier VS Code extension handles this automatically once the plugi
 ```json
 // .vscode/settings.json
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": false
-  }
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": false
+    }
 }
 ```
 
@@ -214,11 +220,13 @@ Disable `source.organizeImports` to prevent VS Code's built-in import sorter fro
 
 ## Step 9 — Run a dry-run
 
-Run `prettier --check` on a small sample (3–5 files, one per package in a monorepo) and show the user a diff of what would change:
+Run a true dry-run (no writes) on a small sample (3–5 files, one per package in a monorepo) and show the user what would change:
 
 ```sh
-prettier --write --list-different 'src/App.tsx' 'src/main.tsx'
+prettier --list-different 'src/App.tsx' 'src/main.tsx'
 ```
+
+> `--write --list-different` together would actually write the files; use `--list-different` alone for a real dry-run.
 
 Show the before/after for imports to confirm the groups look right.
 
@@ -229,6 +237,7 @@ If yes, run `bun run format` (or the equivalent for their package manager).
 ## Final summary
 
 Report:
+
 - Project type: single-package or monorepo (list package roots if monorepo)
 - Config(s) written to: paths
 - Groups configured: list them
