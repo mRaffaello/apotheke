@@ -17,9 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Version comes from the "packageManager" field in the root package.json;
+      # passing it here as well makes the action fail on a version mismatch.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
