@@ -1,4 +1,5 @@
-import type { ImportNode, NamedImport } from './types';
+// Internal
+import type { ImportNode } from './types';
 
 export function deduplicateImports(imports: ImportNode[]): ImportNode[] {
     // Group by dedup key: specifier + importKind (type imports stay separate)

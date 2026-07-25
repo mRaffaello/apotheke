@@ -14,8 +14,8 @@
         "lint:fix": "turbo run lint:fix",
         "test": "turbo run test",
         "fallow:audit": "bash scripts/fallow-audit.sh",
-        "format": "prettier --write 'apps/**/*.{ts,tsx,mdx}' 'packages/**/*.{ts,tsx}'",
-        "format:check": "prettier --check 'apps/**/*.{ts,tsx,mdx}' 'packages/**/*.{ts,tsx}'"
+        "format": "prettier --write '{apps,packages}/**/*.{ts,tsx,mdx}'",
+        "format:check": "prettier --check '{apps,packages}/**/*.{ts,tsx,mdx}'"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

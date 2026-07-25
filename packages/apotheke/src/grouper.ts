@@ -1,5 +1,8 @@
+// Node
 import path from 'node:path';
-import type { ImportNode, ApothekeConfig, GroupedImports } from './types';
+
+// Internal
+import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
 
 interface GroupOptions {
     fileDir?: string;

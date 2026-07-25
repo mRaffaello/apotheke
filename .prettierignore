@@ -1,0 +1,8 @@
+**/node_modules/
+**/dist/
+**/.next/
+**/out/
+**/.source/
+**/.turbo/
+packages/apotheke/tests/e2e/repos/
+pnpm-lock.yaml

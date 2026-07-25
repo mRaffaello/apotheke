@@ -1,0 +1,28 @@
+{
+    "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+    "entry": [
+        "packages/apotheke/index.ts",
+        "packages/apotheke/cli.ts",
+        "packages/apotheke/tests/**/*.test.ts",
+        "**/*.config.{js,cjs,mjs,ts}"
+    ],
+    "ignoreDependencies": ["apotheke"],
+    "ignoreExportsUsedInFile": true,
+    "ignorePatterns": [
+        "**/*.d.ts",
+        "apotheke.config.mjs",
+        "packages/apotheke/tests/e2e/repos/**"
+    ],
+    "rules": {
+        "unused-files": "error",
+        "unused-exports": "error",
+        "unused-types": "error",
+        "unused-dependencies": "error",
+        "unused-enum-members": "error",
+        "unused-class-members": "error",
+        "unresolved-imports": "error",
+        "unlisted-dependencies": "error",
+        "circular-dependencies": "error",
+        "stale-suppressions": "warn"
+    }
+}

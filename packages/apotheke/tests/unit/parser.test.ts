@@ -1,4 +1,7 @@
-import { test, expect, describe } from 'vitest';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
 import { parseImports } from '../../src/parser';
 
 describe('parseImports', () => {

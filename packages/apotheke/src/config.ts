@@ -1,5 +1,8 @@
-import path from 'node:path';
+// Node
 import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+
+// Internal
 import type { ApothekeConfig } from './types';
 
 export function mergeConfigs(parent: ApothekeConfig, child: ApothekeConfig): ApothekeConfig {
@@ -56,7 +59,7 @@ export async function loadConfig(configPath: string): Promise<ApothekeConfig> {
         if (!existsSync(parentPath)) {
             throw new Error(
                 `apotheke: extended config not found: ${parentPath}\n` +
-                `  (referenced from ${configPath} via "extends": "${userConfig.extends}")`
+                    `  (referenced from ${configPath} via "extends": "${userConfig.extends}")`
             );
         }
         const parent = await loadConfig(parentPath);

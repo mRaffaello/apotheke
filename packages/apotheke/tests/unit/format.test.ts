@@ -1,7 +1,10 @@
-import { test, expect, describe } from 'vitest';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
+import type { ApothekeConfig } from '../../src/types';
 import { formatImports } from '../../src/format';
 import { detectQuoteChar } from '../../src/printer';
-import type { ApothekeConfig } from '../../src/types';
 
 const config: ApothekeConfig = {
     groups: [

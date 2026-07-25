@@ -1,6 +1,9 @@
-import { test, expect, describe } from 'vitest';
-import { printImportNode, printGroups } from '../../src/printer';
-import type { ImportNode, GroupedImports, ApothekeConfig } from '../../src/types';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
+import type { ApothekeConfig, GroupedImports, ImportNode } from '../../src/types';
+import { printGroups, printImportNode } from '../../src/printer';
 
 function makeImport(specifier: string, overrides: Partial<ImportNode> = {}): ImportNode {
     return {

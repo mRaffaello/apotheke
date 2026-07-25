@@ -1,4 +1,5 @@
-import type { ImportNode, GroupedImports, ApothekeConfig } from './types';
+// Internal
+import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
 
 export function detectQuoteChar(source: string): "'" | '"' {
     const m = source.match(/from\s*(["'])/);

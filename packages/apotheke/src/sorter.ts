@@ -1,3 +1,4 @@
+// Internal
 import type { ImportNode } from './types';
 
 export function sortGroup(imports: ImportNode[]): ImportNode[] {

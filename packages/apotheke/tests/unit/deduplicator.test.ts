@@ -1,6 +1,9 @@
-import { test, expect, describe } from 'vitest';
-import { deduplicateImports } from '../../src/deduplicator';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
 import type { ImportNode } from '../../src/types';
+import { deduplicateImports } from '../../src/deduplicator';
 
 function makeImport(specifier: string, overrides: Partial<ImportNode> = {}): ImportNode {
     return {

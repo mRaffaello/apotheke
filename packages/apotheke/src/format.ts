@@ -1,9 +1,10 @@
-import { parseImports } from './parser';
+// Internal
+import type { ApothekeConfig, ImportNode } from './types';
 import { deduplicateImports } from './deduplicator';
 import { groupImports } from './grouper';
+import { parseImports } from './parser';
+import { detectQuoteChar, printGroups } from './printer';
 import { sortGroup, sortNamedImports } from './sorter';
-import { printGroups, detectQuoteChar } from './printer';
-import type { ApothekeConfig, ImportNode } from './types';
 
 function collectOrphanSegments(source: string, imports: ImportNode[]): string[] {
     const orphans: string[] = [];

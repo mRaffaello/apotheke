@@ -1,4 +1,7 @@
+// Parser
 import { parseSync } from 'oxc-parser';
+
+// Internal
 import type { ImportNode, NamedImport } from './types';
 
 export function parseImports(source: string): ImportNode[] {

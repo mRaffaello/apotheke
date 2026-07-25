@@ -1,6 +1,9 @@
-import { test, expect, describe } from 'vitest';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
+import type { ApothekeConfig, ImportNode } from '../../src/types';
 import { groupImports } from '../../src/grouper';
-import type { ImportNode, ApothekeConfig } from '../../src/types';
 
 function makeImport(specifier: string, overrides: Partial<ImportNode> = {}): ImportNode {
     return {

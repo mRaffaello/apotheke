@@ -1,6 +1,9 @@
-import { test, expect, describe } from 'vitest';
-import { sortGroup, sortNamedImports } from '../../src/sorter';
+// Testing
+import { describe, expect, test } from 'vitest';
+
+// Internal
 import type { ImportNode } from '../../src/types';
+import { sortGroup, sortNamedImports } from '../../src/sorter';
 
 function makeImport(specifier: string, overrides: Partial<ImportNode> = {}): ImportNode {
     return {

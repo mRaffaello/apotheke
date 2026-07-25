@@ -1,9 +1,14 @@
-import { test, expect, describe, beforeEach, afterEach } from 'vitest';
-import { loadConfig, mergeConfigs } from '../../src/config';
-import type { ApothekeConfig } from '../../src/types';
-import path from 'node:path';
+// Node
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
+
+// Testing
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+
+// Internal
+import type { ApothekeConfig } from '../../src/types';
+import { loadConfig, mergeConfigs } from '../../src/config';
 
 describe('mergeConfigs', () => {
     test('child groups append after parent groups', () => {
