@@ -44,7 +44,27 @@ async function resolveConfig(filePath: string): Promise<ApothekeConfig> {
 
 // ── preprocess hook ──────────────────────────────────────────────────────────
 
-async function preprocess(text: string, options: { filepath?: string }): Promise<string> {
+// Prettier formats fenced code blocks inside Markdown and MDX by handing them
+// to the embedded language's parser. It reports the container via
+// `parentParser` and substitutes a placeholder `filepath` ("dummy.ts"), so the
+// real document is not identifiable from the path.
+//
+// Organising those snippets rewrites documentation — most destructively the
+// "before" examples that exist precisely to show imports in their unorganised
+// state, which get silently turned into copies of the "after" block. Prose is
+// not source, so leave it alone.
+const DOCUMENT_PARSERS = new Set(['markdown', 'mdx']);
+
+export function isDocumentSnippet(parentParser: unknown): boolean {
+    return typeof parentParser === 'string' && DOCUMENT_PARSERS.has(parentParser);
+}
+
+async function preprocess(
+    text: string,
+    options: { filepath?: string; parentParser?: string }
+): Promise<string> {
+    if (isDocumentSnippet(options.parentParser)) return text;
+
     try {
         const config = await resolveConfig(options.filepath ?? process.cwd());
         const fileDir = options.filepath ? path.dirname(path.resolve(options.filepath)) : undefined;
@@ -63,7 +83,10 @@ async function preprocess(text: string, options: { filepath?: string }): Promise
 // prettier, not from our own install location.
 
 type PrettierParser = {
-    preprocess?: (text: string, opts: { filepath?: string }) => string | Promise<string>;
+    preprocess?: (
+        text: string,
+        opts: { filepath?: string; parentParser?: string }
+    ) => string | Promise<string>;
     parse?: (text: string, options: unknown) => unknown;
     astFormat?: string;
     locStart?: (node: unknown) => number;
@@ -147,7 +170,10 @@ function makeParser(pluginPath: string, parserName: string): PrettierParser {
                     `Make sure prettier is installed in your project.`
             );
         },
-        async preprocess(text: string, opts: { filepath?: string }): Promise<string> {
+        async preprocess(
+            text: string,
+            opts: { filepath?: string; parentParser?: string }
+        ): Promise<string> {
             const base = getBase(opts?.filepath);
             const basePreprocess = base?.preprocess;
             const after = basePreprocess
