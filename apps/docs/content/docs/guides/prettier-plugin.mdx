@@ -45,6 +45,21 @@ The plugin overrides the `typescript`, `babel`, `babel-ts` and `babel-flow`
 parsers, which covers `.ts`, `.tsx`, `.js`, `.jsx` and `.mjs`. Other Prettier
 parsers — CSS, JSON, Markdown, YAML — pass through untouched.
 
+### Code blocks in Markdown and MDX are left alone
+
+Prettier formats fenced code blocks inside documents by handing them to the
+embedded language's parser, which would otherwise route your documentation
+through apotheke. That is almost never wanted: a `ts` block showing imports in
+a deliberately messy "before" state would be silently rewritten into the
+organised version, and the example would stop demonstrating anything.
+
+apotheke detects the document container and returns those snippets untouched,
+so `prettier --write` on a `.md` or `.mdx` file reformats the prose and leaves
+every code block exactly as written.
+
+Your `.ts` and `.tsx` files are unaffected — only snippets embedded in a
+document are skipped.
+
 ## Failures are silent by design
 
 If the plugin throws for any reason — no config found, a syntax error in
