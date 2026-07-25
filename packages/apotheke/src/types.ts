@@ -26,7 +26,6 @@ export interface ApothekeConfig {
     groups: GroupConfig[];
     aliases?: Record<string, string>;
     baseUrl?: string;
-    normalizeImports?: 'alias' | 'relative' | 'absolute' | false;
     groupSeparator?: boolean;
     groupComments?: boolean;
 }
