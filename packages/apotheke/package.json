@@ -1,10 +1,29 @@
 {
     "name": "apotheke",
     "version": "0.0.1",
-    "description": "JavaScript/TypeScript import organizer — prettier plugin + CLI",
+    "description": "Prettier for imports — deterministic import organization as a Prettier plugin or CLI",
     "type": "module",
+    "license": "MIT",
+    "author": "Marco Raffaello",
+    "homepage": "https://mraffaello.github.io/apotheke",
+    "keywords": [
+        "imports",
+        "import-sorter",
+        "organize-imports",
+        "prettier",
+        "prettier-plugin",
+        "typescript",
+        "javascript",
+        "codemod",
+        "monorepo"
+    ],
     "repository": {
-        "url": "https://github.com/mRaffaello/apotheke"
+        "type": "git",
+        "url": "https://github.com/mRaffaello/apotheke",
+        "directory": "packages/apotheke"
+    },
+    "bugs": {
+        "url": "https://github.com/mRaffaello/apotheke/issues"
     },
     "exports": {
         ".": "./dist/index.js"
@@ -15,7 +34,8 @@
         "apotheke": "./dist/cli.js"
     },
     "files": [
-        "dist"
+        "dist",
+        "SKILL.md"
     ],
     "scripts": {
         "build": "tsup",
