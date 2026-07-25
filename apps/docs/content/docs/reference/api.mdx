@@ -1,0 +1,108 @@
+---
+title: Programmatic API
+description: Use the organiser directly from JavaScript.
+---
+
+```ts
+import { formatImports, parsers, type ApothekeConfig } from 'apotheke';
+```
+
+The package exports the Prettier `parsers` object, the `formatImports`
+function, and the `ApothekeConfig` type. Config discovery, glob expansion and
+file I/O are **not** exported — those live in the CLI.
+
+## `formatImports`
+
+```ts
+function formatImports(source: string, config: ApothekeConfig, options?: FormatOptions): string;
+```
+
+Organises the import block of `source` and returns the new source. Pure: no
+files are read or written. If the source contains no imports it is returned
+unchanged.
+
+```ts title="FormatOptions"
+interface FormatOptions {
+    fileDir?: string; // directory of the file, for resolving relative imports
+    rootDir?: string; // base for resolving relative alias targets
+}
+```
+
+Both default to `process.cwd()`. Pass `fileDir` whenever you use path-based
+group patterns, or relative specifiers cannot be resolved and will fall into
+`Others`.
+
+```ts
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { formatImports } from 'apotheke';
+
+const config = {
+    groups: [
+        { name: 'React', match: ['react', 'react-dom'] },
+        { name: 'Hooks', match: ['**/hooks/**'] }
+    ]
+};
+
+const file = path.resolve('src/App.tsx');
+const output = formatImports(readFileSync(file, 'utf8'), config, {
+    fileDir: path.dirname(file),
+    rootDir: process.cwd()
+});
+```
+
+<Callout title="You must supply the config yourself">
+  `formatImports` takes a config object, not a path — it never looks for
+  `apotheke.config.mjs`. To reuse a project's config file, `import()` it
+  directly:
+
+```ts
+const { default: config } = await import('/abs/path/apotheke.config.mjs');
+```
+
+This skips the `extends` resolution and tsconfig alias merging that the
+config loader performs, so a config relying on either will not behave
+identically.
+
+</Callout>
+
+## `parsers`
+
+```ts
+const parsers: {
+    typescript: PrettierParser;
+    babel: PrettierParser;
+    'babel-ts': PrettierParser;
+    'babel-flow': PrettierParser;
+};
+```
+
+The Prettier plugin surface. You do not call this — Prettier does, when
+`apotheke` is listed in `plugins`. Each entry wraps the built-in parser of the
+same name and overrides `preprocess`, chaining to any previously registered
+plugin's `preprocess` first.
+
+Errors thrown during preprocessing are caught and the original text returned,
+so a broken config degrades to a no-op rather than failing the format run.
+
+## `ApothekeConfig`
+
+```ts
+interface ApothekeConfig {
+    extends?: string;
+    groups: GroupConfig[];
+    aliases?: Record<string, string>;
+    baseUrl?: string;
+    groupSeparator?: boolean;
+    groupComments?: boolean;
+}
+
+interface GroupConfig {
+    name: string;
+    match: string[];
+}
+```
+
+See the [config reference](/docs/reference/config) for field semantics. Note
+that `extends` is inert when passed straight to `formatImports` — it is
+resolved by the config loader, not the formatter.

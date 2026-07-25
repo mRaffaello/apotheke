@@ -11,6 +11,7 @@ packages/apotheke/tests/e2e/repos/
 .next/
 out/
 .source/
+next-env.d.ts
 
 # output
 out

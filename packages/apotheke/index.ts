@@ -4,7 +4,7 @@
  * Prettier plugin usage (.prettierrc):
  *   { "plugins": ["apotheke"] }
  *
- * Requirements: prettier v3+, Bun runtime
+ * Requirements: prettier v3+, Node.js >= 18
  *
  * The plugin runs as a `preprocess` step, so apotheke organises imports
  * first and prettier formats the result — correct order, one pass.

@@ -14,12 +14,13 @@
         "lint:fix": "turbo run lint:fix",
         "test": "turbo run test",
         "fallow:audit": "bash scripts/fallow-audit.sh",
-        "format": "prettier --write '{apps,packages}/**/*.{ts,tsx,mdx}'",
-        "format:check": "prettier --check '{apps,packages}/**/*.{ts,tsx,mdx}'"
+        "format": "prettier --write '{apps,packages}/**/*.{ts,tsx}'",
+        "format:check": "prettier --check '{apps,packages}/**/*.{ts,tsx}'"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
-            "esbuild"
+            "esbuild",
+            "sharp"
         ]
     },
     "devDependencies": {

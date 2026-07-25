@@ -1,0 +1,82 @@
+---
+title: Quick start
+description: From install to organised imports in about two minutes.
+---
+
+## 1. Write a config
+
+Create `apotheke.config.mjs` in your project root. There is no default group
+set — apotheke organises imports the way _you_ describe, so this file is
+required.
+
+```js title="apotheke.config.mjs"
+export default {
+    groups: [
+        { name: 'React', match: ['react', 'react-dom'] },
+        { name: 'Hooks', match: ['**/hooks/**'] },
+        { name: 'Api', match: ['**/api/**', '@tanstack/react-query'] },
+        { name: 'Navigation', match: ['@tanstack/react-router'] }
+    ],
+    groupSeparator: true,
+    groupComments: true
+};
+```
+
+Groups are matched **in order, first match wins**. Anything unmatched collects
+in an implicit `Others` group at the end, so you never lose an import by
+forgetting to describe it.
+
+<Callout type="warn" title="Wildcards are greedy">
+    `react-*` also matches `react-hook-form`, `react-i18next` and `react-day-picker`. If you want
+    those elsewhere, either list their groups *before* React or narrow the match to `['react',
+    'react-dom']`.
+</Callout>
+
+## 2. Wire it up
+
+The plugin route — add apotheke **last** in the `plugins` array:
+
+```json title=".prettierrc.json"
+{
+    "plugins": ["apotheke"]
+}
+```
+
+Or use the CLI directly:
+
+```sh
+npx apotheke --write 'src/**/*.{ts,tsx}'
+```
+
+## 3. Preview before committing to it
+
+Never run a repo-wide rewrite blind. Check what would change first:
+
+```sh
+npx apotheke --diff 'src/**/*.{ts,tsx}'
+```
+
+When the output looks right, apply it:
+
+```sh
+npx apotheke --write 'src/**/*.{ts,tsx}'
+```
+
+## 4. Keep it enforced
+
+Add a CI check that fails when someone's imports drift:
+
+```sh
+npx apotheke --check 'src/**/*.{ts,tsx}'
+```
+
+`--check` exits `1` if any file would change and prints which ones.
+
+## Where to go next
+
+- [Configuring groups](/docs/guides/groups) — matching rules, ordering, and the
+  patterns that actually work
+- [Aliases and tsconfig paths](/docs/guides/aliases) — why `@/lib/x` already
+  works
+- [Monorepos](/docs/guides/monorepos) — one root config, per-package overrides
+- [Config reference](/docs/reference/config) — every option

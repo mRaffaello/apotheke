@@ -1,0 +1,84 @@
+---
+title: CLI usage
+description: Organize, preview and verify imports without Prettier.
+---
+
+The CLI runs the same engine as the plugin and reads the same config. Use it
+when the project does not use Prettier, when you want a CI gate, or when you
+want error messages instead of the plugin's silent failures.
+
+```sh
+apotheke --write 'src/**/*.{ts,tsx}'     # rewrite in place
+apotheke --check 'src/**/*.{ts,tsx}'     # exit 1 if anything would change
+apotheke --diff  'src/**/*.{ts,tsx}'     # show changes, write nothing
+apotheke --stdin-filepath src/App.tsx    # stdin in, stdout out
+```
+
+Exactly one mode is required; the CLI errors and prints help if none is given.
+
+## Quote your globs
+
+```sh
+apotheke --write 'src/**/*.tsx'    # apotheke expands it
+apotheke --write src/**/*.tsx      # your shell expands it
+```
+
+Both work, but unquoted globs are expanded by the shell first, which in most
+shells does not recurse into subdirectories the way `**` implies. Quote them
+and let apotheke handle expansion.
+
+## Preview before rewriting
+
+`--diff` prints a line-level diff per changed file and writes nothing:
+
+```sh
+apotheke --diff 'src/**/*.{ts,tsx}'
+```
+
+Run this before the first repo-wide `--write`. The output tells you whether
+your groups are actually describing the codebase.
+
+## CI gate
+
+```sh
+apotheke --check 'src/**/*.{ts,tsx}'
+```
+
+Prints `needs formatting: <file>` for each offender and exits `1` if there was
+at least one. Exits `0` and prints nothing when clean.
+
+```yaml title=".github/workflows/ci.yml"
+- run: npx apotheke --check 'src/**/*.{ts,tsx}'
+```
+
+If you use the Prettier plugin, `prettier --check` already covers this — you do
+not need both.
+
+## Piping a single file
+
+```sh
+cat src/App.tsx | apotheke --stdin-filepath src/App.tsx
+```
+
+The path is still required even though content arrives on stdin: it is how
+apotheke finds your config and resolves relative imports. The result goes to
+stdout, so redirecting back to the same file will truncate it — write to a
+temporary file instead.
+
+## What gets skipped
+
+- Files that are not `.ts`, `.tsx`, `.js` or `.jsx`, even if a glob matches them
+- Anything inside a **git submodule** — detected via `git submodule foreach`,
+  so vendored subprojects are never rewritten
+- Files whose organised output is identical to the input, which are counted as
+  unchanged and never rewritten
+
+## Choosing a config explicitly
+
+```sh
+apotheke --write --config ./configs/apotheke.mjs 'src/**/*.ts'
+```
+
+Without `--config`, apotheke walks up from each file's directory looking for
+`apotheke.config.mjs` then `apotheke.config.js`, and errors if it reaches the
+filesystem root without finding one.

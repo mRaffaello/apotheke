@@ -1,0 +1,139 @@
+---
+title: apotheke.config.mjs
+description: Every configuration option, with defaults and behaviour.
+---
+
+Config lives in `apotheke.config.mjs` (or `.js`) and default-exports an object.
+It is discovered by walking up from each formatted file.
+
+<Callout title="Always use .mjs">
+    A `.ts` config is never loaded. Node — where Prettier runs — cannot `import()` TypeScript, so
+    only `apotheke.config.mjs` and `apotheke.config.js` are discovered.
+</Callout>
+
+```js title="apotheke.config.mjs"
+export default {
+    extends: '../../apotheke.config.mjs',
+    groups: [{ name: 'React', match: ['react', 'react-dom'] }],
+    aliases: { '@': './src' },
+    baseUrl: '.',
+    groupSeparator: true,
+    groupComments: true
+};
+```
+
+## Options
+
+| Option           | Type                     | Default          | Description                                              |
+| ---------------- | ------------------------ | ---------------- | -------------------------------------------------------- |
+| `groups`         | `GroupConfig[]`          | — (**required**) | Ordered group definitions. First match wins.             |
+| `extends`        | `string`                 | `undefined`      | Path to a parent config, relative to this file.          |
+| `aliases`        | `Record<string, string>` | from `tsconfig`  | Import prefix → directory. Merged with tsconfig `paths`. |
+| `baseUrl`        | `string`                 | from `tsconfig`  | Base for resolving alias targets.                        |
+| `groupSeparator` | `boolean`                | `true`           | Blank line between groups.                               |
+| `groupComments`  | `boolean`                | `true`           | `// GroupName` header above each group.                  |
+
+There is no option to disable sorting or deduplication; both always run.
+
+### `groups`
+
+```ts
+interface GroupConfig {
+    name: string; // used as the comment header
+    match: string[]; // glob patterns tested against the specifier
+}
+```
+
+Required — apotheke has no built-in group set and throws if the config is
+missing. Groups are evaluated in array order and the first match claims the
+import. Unmatched imports fall into an implicit trailing `Others` group;
+side-effect imports go into an implicit leading group and are never reordered
+relative to each other.
+
+Supported glob syntax:
+
+| Token | Meaning                                                            |
+| ----- | ------------------------------------------------------------------ |
+| `*`   | any run of characters within one path segment                      |
+| `**`  | any number of segments; a leading `**/` also matches zero segments |
+| `?`   | exactly one character, not `/`                                     |
+
+Everything else is literal. Character classes (`[abc]`) and brace expansion
+(`{a,b}`) are **not** supported — write separate patterns instead.
+
+### `extends`
+
+Resolved relative to the directory of the file containing it, and may chain to
+further parents. A missing parent throws with the resolved path.
+
+Merge semantics:
+
+| Field           | Behaviour                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `groups`        | Merged **by name** — a child group replaces the parent's entry in place; new names append. |
+| `aliases`       | Shallow-merged, child wins per key.                                                        |
+| everything else | Child value replaces parent value when present.                                            |
+
+You cannot delete an inherited group.
+
+### `aliases`
+
+```js
+aliases: {
+    '@': './src',
+    '#internal': './packages/internal/src'
+}
+```
+
+Keys omit the trailing `/*`. Entries from `tsconfig.json` `compilerOptions.paths`
+are merged in automatically, and **your explicit entries win** on key
+collisions. Only the first target of a multi-target path mapping is used.
+
+Alias targets resolve against the nearest `package.json` directory under the
+CLI, but against `process.cwd()` under the Prettier plugin — see
+[monorepos](/docs/guides/monorepos).
+
+### `baseUrl`
+
+Taken from `tsconfig.json` when present and not set here. Only read from
+`tsconfig.json`; `jsconfig.json` is ignored.
+
+### `groupSeparator` / `groupComments`
+
+Both default to `true` and are only disabled by an explicit `false`.
+
+```js title="Ordering and blank lines, no // headers"
+export default {
+    groups: [/* ... */],
+    groupComments: false
+};
+```
+
+## tsconfig integration
+
+At load time apotheke reads `tsconfig.json` from the config file's directory
+and merges `compilerOptions.paths` and `compilerOptions.baseUrl`. Comments in
+the tsconfig are stripped before parsing, and an unreadable or malformed
+tsconfig is ignored rather than fatal.
+
+## Full example
+
+```js title="apotheke.config.mjs"
+export default {
+    groups: [
+        { name: 'Node', match: ['node:*'] },
+        { name: 'React', match: ['react', 'react-dom'] },
+        { name: 'Forms', match: ['react-hook-form', '@hookform/resolvers/**', 'zod'] },
+        { name: 'Api', match: ['@tanstack/react-query', 'axios', '**/api/**'] },
+        { name: 'Hooks', match: ['**/hooks/**'] },
+        { name: 'Components', match: ['**/components/**'] },
+        { name: 'Styling', match: ['clsx', 'tailwind-merge'] }
+    ],
+    aliases: { '@': './src' },
+    groupSeparator: true,
+    groupComments: true
+};
+```
+
+Note `Forms` precedes any wildcard React group so `react-hook-form` is not
+swallowed by `react-*`.
