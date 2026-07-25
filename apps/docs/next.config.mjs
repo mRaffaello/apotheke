@@ -2,9 +2,9 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
-// Served from https://mraffaello.github.io/apotheke, so every route and asset
-// needs the repository name as a prefix. Kept unconditional so local dev and
-// the deployed site resolve URLs identically.
+// Served from https://marcoraffaello.com/apotheke as a GitHub Pages project
+// site, so every route and asset needs the repository name as a prefix. Kept
+// unconditional so local dev and the deployed site resolve URLs identically.
 const basePath = '/apotheke';
 
 /** @type {import('next').NextConfig} */
