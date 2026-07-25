@@ -1,0 +1,84 @@
+---
+title: CLI flags
+description: Complete command-line surface, exit codes and file selection rules.
+---
+
+```
+apotheke <mode> [options] [files...]
+```
+
+Exactly one mode is required. With no arguments, or with `--help`, apotheke
+prints usage and exits `0`.
+
+## Modes
+
+| Flag                      | Behaviour                                                        |
+| ------------------------- | ---------------------------------------------------------------- |
+| `--write <files...>`      | Rewrite files in place. Prints `formatted <file>` per change.    |
+| `--check <files...>`      | Print `needs formatting: <file>` per offender. Exits `1` if any. |
+| `--diff <files...>`       | Print a line diff per changed file. Writes nothing.              |
+| `--stdin-filepath <file>` | Read source from stdin, write the result to stdout.              |
+
+## Options
+
+| Flag              | Description                                                               |
+| ----------------- | ------------------------------------------------------------------------- |
+| `--config <path>` | Use this config instead of discovering one. Resolved relative to the cwd. |
+| `--help`          | Print usage and exit `0`.                                                 |
+
+## Exit codes
+
+| Code | Meaning                                                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `0`  | Success, or `--check` found nothing to change.                                                                                 |
+| `1`  | `--check` found files needing formatting, no mode given, no files given, or an error was thrown (for example no config found). |
+
+## File selection
+
+Positional arguments after the mode flag are treated as paths or globs.
+Anything starting with `--` is skipped, as is the value following `--config`.
+
+Selection rules:
+
+- Arguments containing `*`, `?`, `{` or `[` are expanded by
+  [fast-glob](https://github.com/mrmlnc/fast-glob) relative to the current
+  working directory.
+- Arguments without glob characters are treated as literal paths and must
+  exist.
+- Only `.ts`, `.tsx`, `.js` and `.jsx` files are processed. Other extensions
+  are dropped even when a glob matches them.
+- Files inside a git submodule are excluded. Submodule paths come from
+  `git submodule foreach --recursive --quiet pwd`; if that fails, nothing is
+  excluded.
+- Duplicates are removed, so overlapping globs do not process a file twice.
+
+Quote globs to let apotheke expand them rather than your shell:
+
+```sh
+apotheke --write 'src/**/*.{ts,tsx}'
+```
+
+## Config discovery
+
+With `--config`, that path is loaded directly. Otherwise apotheke walks up from
+each file's directory, checking for `apotheke.config.mjs` then
+`apotheke.config.js` at each level, and throws if it reaches the filesystem
+root without a match.
+
+Discovery runs **per file**, so a monorepo picks up the nearest package config
+automatically.
+
+## stdin
+
+```sh
+cat src/App.tsx | apotheke --stdin-filepath src/App.tsx
+```
+
+The path argument is mandatory — it locates the config and resolves relative
+imports — but the file's contents are read from stdin. Output goes to stdout.
+
+<Callout type="warn">
+  Redirecting stdout back to the input file (`apotheke --stdin-filepath a.ts <
+  a.ts > a.ts`) truncates it before the read completes. Write to a temporary
+  file and move it into place.
+</Callout>

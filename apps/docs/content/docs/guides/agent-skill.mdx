@@ -1,0 +1,54 @@
+---
+title: Agent skill
+description: Let a coding agent inspect your codebase and write the config for you.
+---
+
+Writing a good group config means knowing which libraries and folders actually
+dominate a codebase. That is tedious to work out by hand and easy for an agent
+to do well, so apotheke ships one as a skill.
+
+The skill scans your imports, proposes groups based on what it finds, asks for
+confirmation, writes `apotheke.config.mjs`, wires up Prettier, and runs a
+dry-run before touching anything.
+
+## Installing it
+
+The skill ships inside the npm package, so it is already on disk after install:
+
+```sh
+mkdir -p .claude/skills/setup-apotheke
+cp node_modules/apotheke/SKILL.md .claude/skills/setup-apotheke/SKILL.md
+```
+
+Then ask your agent to set up apotheke. It will pick the skill up by
+description.
+
+You can also read it straight from the repository:
+
+```sh
+curl -o .claude/skills/setup-apotheke/SKILL.md \
+  https://raw.githubusercontent.com/mRaffaello/apotheke/main/packages/apotheke/SKILL.md
+```
+
+## What it does
+
+1. **Detects the project shape** — looks for `pnpm-workspace.yaml`,
+   `turbo.json`, `nx.json`, `lerna.json`, `rush.json` or a `workspaces` field
+   to decide between the single-package and monorepo paths.
+2. **Scans imports** across the source tree, plus `tsconfig.json` paths, to
+   learn which libraries and folders matter.
+3. **Proposes groups** and asks you to confirm, rename or reorder them before
+   writing anything.
+4. **Writes the config** — a single `apotheke.config.mjs`, or a root config
+   plus per-package configs using `extends` in a monorepo.
+5. **Wires up Prettier**, placing `apotheke` last in the `plugins` array and
+   checking that Prettier 3 is installed.
+6. **Runs a dry-run** with `prettier --list-different` and shows you the
+   before/after before offering to format the whole project.
+
+## Why it asks before writing
+
+Group design is a judgement call that depends on how your team reads code, and
+a wrong config produces a large, noisy diff across every file. The skill is
+built to stop and confirm at step 3 rather than guess — treat that prompt as
+the real decision point.

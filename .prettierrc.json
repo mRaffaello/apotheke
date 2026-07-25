@@ -1,4 +1,3 @@
-
 {
     "arrowParens": "avoid",
     "bracketSameLine": true,
@@ -7,6 +6,7 @@
     "htmlWhitespaceSensitivity": "css",
     "insertPragma": false,
     "jsxSingleQuote": true,
+    "plugins": ["apotheke"],
     "proseWrap": "preserve",
     "quoteProps": "as-needed",
     "requirePragma": false,

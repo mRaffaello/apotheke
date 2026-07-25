@@ -1,2 +1,5 @@
-npx tsc
-pnpm test
+pnpm build
+pnpm format:check
+pnpm typecheck
+pnpm lint
+pnpm fallow:audit

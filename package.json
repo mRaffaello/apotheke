@@ -1,49 +1,40 @@
 {
-    "name": "apotheke",
-    "version": "0.0.1",
-    "description": "JavaScript/TypeScript import organizer — prettier plugin + CLI",
+    "name": "apotheke-monorepo",
+    "version": "0.0.0",
+    "private": true,
     "type": "module",
-    "repository": {
-        "url": "https://github.com/mRaffaello/apotheke"
-    },
-    "exports": {
-        ".": "./dist/index.js"
-    },
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "bin": {
-        "apotheke": "./dist/cli.js"
-    },
-    "files": [
-        "dist"
-    ],
+    "packageManager": "pnpm@10.8.1",
     "scripts": {
-        "build": "tsup",
-        "typecheck": "tsc --noEmit",
-        "test": "vitest run",
-        "test:unit": "vitest run tests/unit",
-        "test:e2e": "vitest run tests/e2e/e2e.test.ts",
-        "prepare": "husky"
+        "prepare": "husky",
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "docs:dev": "turbo run dev --filter @apotheke/docs",
+        "typecheck": "turbo run typecheck",
+        "lint": "turbo run lint",
+        "lint:fix": "turbo run lint:fix",
+        "test": "turbo run test",
+        "fallow:audit": "bash scripts/fallow-audit.sh",
+        "format": "prettier --write '{apps,packages}/**/*.{ts,tsx}'",
+        "format:check": "prettier --check '{apps,packages}/**/*.{ts,tsx}'"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "esbuild",
+            "sharp"
+        ]
     },
     "devDependencies": {
         "@commitlint/cli": "^20.5.3",
         "@commitlint/config-conventional": "^20.5.3",
-        "@types/node": "^25.6.0",
+        "apotheke": "workspace:*",
+        "eslint": "^9",
+        "eslint-plugin-react": "^7",
+        "eslint-plugin-react-hooks": "^7",
+        "globals": "^17",
         "husky": "^9.1.7",
         "prettier": "^3.8.3",
-        "tsup": "^8.5.1",
-        "vitest": "^4.1.5"
-    },
-    "peerDependencies": {
-        "prettier": ">=3"
-    },
-    "peerDependenciesMeta": {
-        "prettier": {
-            "optional": true
-        }
-    },
-    "dependencies": {
-        "fast-glob": "^3.3.3",
-        "oxc-parser": "^0.129.0"
+        "turbo": "2.9.9",
+        "typescript": "~5.9.3",
+        "typescript-eslint": "^8"
     }
 }

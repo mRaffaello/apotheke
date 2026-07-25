@@ -1,0 +1,67 @@
+{
+    "name": "apotheke",
+    "version": "0.0.1",
+    "description": "Prettier for imports — deterministic import organization as a Prettier plugin or CLI",
+    "type": "module",
+    "license": "MIT",
+    "author": "Marco Raffaello",
+    "homepage": "https://marcoraffaello.com/apotheke",
+    "keywords": [
+        "imports",
+        "import-sorter",
+        "organize-imports",
+        "prettier",
+        "prettier-plugin",
+        "typescript",
+        "javascript",
+        "codemod",
+        "monorepo"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mRaffaello/apotheke",
+        "directory": "packages/apotheke"
+    },
+    "bugs": {
+        "url": "https://github.com/mRaffaello/apotheke/issues"
+    },
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "apotheke": "./dist/cli.js"
+    },
+    "files": [
+        "dist",
+        "SKILL.md"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:unit": "vitest run tests/unit",
+        "test:e2e": "vitest run tests/e2e/e2e.test.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^25.6.0",
+        "tsup": "^8.5.1",
+        "typescript": "~5.9.3",
+        "vitest": "^4.1.5"
+    },
+    "peerDependencies": {
+        "prettier": ">=3"
+    },
+    "peerDependenciesMeta": {
+        "prettier": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "fast-glob": "^3.3.3",
+        "oxc-parser": "^0.129.0"
+    }
+}

@@ -1,0 +1,14 @@
+**/node_modules/
+**/dist/
+**/.next/
+**/out/
+**/.source/
+**/.turbo/
+packages/apotheke/tests/e2e/repos/
+pnpm-lock.yaml
+**/next-env.d.ts
+
+# Documentation deliberately shows unorganised "before" imports in fenced code
+# blocks. Prettier formats embedded code, which runs it back through apotheke's
+# preprocess hook and rewrites the examples — destroying the thing being shown.
+**/*.mdx

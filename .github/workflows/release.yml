@@ -17,9 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Version comes from the "packageManager" field in the root package.json;
+      # passing it here as well makes the action fail on a version mismatch.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -29,7 +29,7 @@ jobs:
 
       - name: Verify tag matches package.json version
         run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
+          PKG_VERSION=$(node -p "require('./packages/apotheke/package.json').version")
           TAG_VERSION="${GITHUB_REF_NAME}"
           if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
             echo "❌ Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
@@ -39,13 +39,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # dist/ must exist before format:check — the repo dogfoods apotheke as a
+      # prettier plugin loaded from packages/apotheke/dist.
+      - run: pnpm build
+
+      - run: pnpm format:check
+
+      - run: pnpm lint
+
       - run: pnpm typecheck
 
       - run: pnpm test
 
-      - run: pnpm build
-
-      - run: pnpm publish --no-git-checks --provenance --access public
+      - run: pnpm --filter apotheke publish --no-git-checks --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

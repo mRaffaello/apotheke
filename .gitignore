@@ -1,8 +1,17 @@
-# dependencies (bun install)
+# dependencies
 node_modules
 
 # e2e fixture repos (cloned at test time, pinned by commit hash in e2e.test.ts)
-tests/e2e/repos/
+packages/apotheke/tests/e2e/repos/
+
+# turborepo
+.turbo/
+
+# next.js / fumadocs
+.next/
+out/
+.source/
+next-env.d.ts
 
 # output
 out

@@ -1,0 +1,81 @@
+---
+title: Introduction
+description: Prettier for imports — deterministic import organization as a Prettier plugin or CLI.
+---
+
+Import order is the kind of thing every team argues about once and then never
+settles. apotheke settles it the way Prettier settled formatting: you describe
+the groups you want in a config file, and every file in the repo comes out the
+same way, forever.
+
+It is **not** a replacement for Prettier. It runs *inside* Prettier as a
+`preprocess` plugin, so one `prettier --write` both organises imports and
+formats the code. If you would rather not involve Prettier at all, the same
+engine ships as a standalone CLI.
+
+## What it does
+
+Given a file whose imports arrived in whatever order they were typed:
+
+```ts title="Before"
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { createRoute } from '@tanstack/react-router';
+import { tsr } from '../api/tsr';
+import useLoggedUser from '../hooks/use-logged-user';
+```
+
+apotheke produces:
+
+```ts title="After"
+// React
+import { useMemo } from 'react';
+
+// Hooks
+import useLoggedUser from '../hooks/use-logged-user';
+
+// Api
+import { tsr } from '../api/tsr';
+import { useQuery } from '@tanstack/react-query';
+
+// Navigation
+import { createRoute } from '@tanstack/react-router';
+```
+
+Three things happened: imports were assigned to **groups** you defined, sorted
+alphabetically within each group, and given optional comment headers and blank
+line separators.
+
+## Why groups instead of a fixed order
+
+Most import sorters ship an opinion — builtins, then external, then internal,
+then relative. That ordering describes where a module *comes from*, which is
+rarely what you care about when reading a file. apotheke lets you order by what
+a module *is*: React, then hooks, then data fetching, then routing.
+
+Groups are matched in order and the first match wins, so the config reads
+top-to-bottom exactly as the output does.
+
+## Beyond ordering
+
+<Cards>
+  <Card title="Deduplication" href="/docs/guides/groups">
+    Two imports from the same specifier are merged into one statement.
+  </Card>
+  <Card title="Alias awareness" href="/docs/guides/aliases">
+    `tsconfig.json` paths are read automatically, so `@/lib/x` groups with the
+    folder it actually points at.
+  </Card>
+  <Card title="Monorepo config inheritance" href="/docs/guides/monorepos">
+    A root config defines shared groups; each package extends and overrides it.
+  </Card>
+  <Card title="Agent skill" href="/docs/guides/agent-skill">
+    A bundled skill that inspects a codebase and writes the config for you.
+  </Card>
+</Cards>
+
+## Requirements
+
+- Node.js 18 or later
+- Prettier 3 or later, if you use the plugin (Prettier 2 lacks async
+  `preprocess`; see the [fallback](/docs/guides/prettier-plugin))

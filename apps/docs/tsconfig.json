@@ -1,0 +1,30 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowJs": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "esnext",
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "incremental": true,
+        "paths": {
+            "@/*": ["./*"],
+            "collections/*": ["./.source/*"]
+        },
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ]
+    },
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        ".next/types/**/*.ts",
+        ".next/dev/types/**/*.ts"
+    ],
+    "exclude": ["node_modules"]
+}
