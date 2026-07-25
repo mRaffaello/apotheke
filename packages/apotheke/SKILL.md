@@ -5,7 +5,11 @@ description: Set up apotheke import organizer in any JS/TS project. Scans existi
 
 # Setup Apotheke
 
-Apotheke is an import organizer for JavaScript/TypeScript projects. This skill installs and configures it by analyzing the project's actual imports, then wires it up as a **prettier plugin** so import organization and formatting happen in a single `prettier --write` pass.
+Apotheke is **Prettier for imports** — deterministic, configurable import organization for JavaScript and TypeScript. It is not a replacement for prettier: it runs *inside* prettier as a `preprocess` plugin, so imports get organized and code gets formatted in a single `prettier --write` pass. It also ships a standalone CLI for projects that do not use prettier.
+
+This skill installs and configures it by analyzing the project's actual imports, then wiring it up as a prettier plugin.
+
+Full documentation: <https://mraffaello.github.io/apotheke>
 
 ## Step 1 — Detect project structure (monorepo vs single package)
 
@@ -72,15 +76,20 @@ In a monorepo with a shared root config: put universal groups (React, external l
 Present the proposed config clearly and ask the user:
 
 1. Are these groups right? Any to add, remove, or rename?
-2. Should named imports within a line be sorted alphabetically? (default: yes)
-3. Should there be blank lines between groups? (default: yes)
-4. Should group comments (`// React`) be added? (default: yes)
+2. Is the order right? Groups are matched top-to-bottom and the first match wins.
+3. Should there be blank lines between groups? (`groupSeparator`, default: yes)
+4. Should group comments (`// React`) be added? (`groupComments`, default: yes)
+
+Do **not** offer to toggle sorting or deduplication. Imports are always sorted
+alphabetically within a group, named imports are always sorted within the
+braces, and duplicate specifiers are always merged. There are no options for
+these.
 
 Wait for confirmation before proceeding.
 
 ## Step 5 — Write apotheke.config.mjs
 
-**Always use `.mjs`** — it works in both the Bun CLI and the Node.js prettier plugin. Never write `.ts` configs: Node.js (where prettier runs) cannot `import()` TypeScript files.
+**Always use `.mjs`** — it works with both the CLI and the Node.js prettier plugin. Never write `.ts` configs: Node.js (where prettier runs) cannot `import()` TypeScript files. Only `apotheke.config.mjs` and `apotheke.config.js` are discovered.
 
 ```js
 // apotheke.config.mjs
@@ -122,18 +131,7 @@ Check if apotheke is already in `package.json` dependencies. If not, install it:
 
 In a monorepo, install at the root unless the workspace requires per-package installs.
 
-### 6b. Build the plugin bundle
-
-Apotheke's prettier plugin is a pre-built Node.js bundle. After installing, run:
-
-```sh
-# from the apotheke package dir (or via the installed binary)
-bun run build   # produces dist/index.js
-```
-
-If apotheke is installed as a package, `dist/index.js` ships with it. If it's a local path dependency or link, run the build once after cloning.
-
-### 6c. Add apotheke to the prettier config
+### 6b. Add apotheke to the prettier config
 
 Check for `.prettierrc`, `.prettierrc.js`, `.prettierrc.json`, or `prettier.config.js`. Add `"apotheke"` to the `plugins` array (create the file if none exists):
 
@@ -159,7 +157,7 @@ For JSON prettier configs (`.prettierrc` or `.prettierrc.json`):
 > { "plugins": ["prettier-plugin-tailwindcss", "apotheke"] }
 > ```
 
-### 6d. Verify prettier version
+### 6c. Verify prettier version
 
 Check that prettier v3 is installed (`"prettier": "^3"` in devDependencies). If v2 is found, tell the user:
 
@@ -232,7 +230,8 @@ Show the before/after for imports to confirm the groups look right.
 
 Ask: "Does this look right? Shall I run `format` on the whole project?"
 
-If yes, run `bun run format` (or the equivalent for their package manager).
+If yes, run the `format` script using the package manager detected in Step 6a
+(`pnpm run format`, `bun run format`, `yarn format` or `npm run format`).
 
 ## Final summary
 
@@ -242,6 +241,9 @@ Report:
 - Config(s) written to: paths
 - Groups configured: list them
 - Prettier plugin: wired up in `prettier.config.js` (or equivalent)
-- Script added: `bun run format`
+- Script added: `format` / `format:check`
 - Files that would be changed: N files
 - Whether `--write` was run
+
+Point the user at the documentation for anything beyond this setup:
+<https://mraffaello.github.io/apotheke>
