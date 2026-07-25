@@ -10,4 +10,4 @@ export const gitConfig = {
 };
 
 export const npmUrl = 'https://www.npmjs.com/package/apotheke';
-export const siteUrl = 'https://mraffaello.github.io/apotheke';
+export const siteUrl = 'https://marcoraffaello.com/apotheke';

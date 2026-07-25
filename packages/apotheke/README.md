@@ -3,7 +3,7 @@
 **Prettier for imports.** Deterministic, configurable import organization for
 JavaScript and TypeScript — as a Prettier plugin or a standalone CLI.
 
-📖 **[Documentation](https://mraffaello.github.io/apotheke)**
+📖 **[Documentation](https://marcoraffaello.com/apotheke)**
 
 ```ts
 // Before
@@ -77,13 +77,13 @@ read automatically.
 ## Documentation
 
 Full guides and reference at
-**[mraffaello.github.io/apotheke](https://mraffaello.github.io/apotheke)**:
+**[marcoraffaello.com/apotheke](https://marcoraffaello.com/apotheke)**:
 
-- [Configuring groups](https://mraffaello.github.io/apotheke/docs/guides/groups)
-- [Aliases and tsconfig paths](https://mraffaello.github.io/apotheke/docs/guides/aliases)
-- [Monorepos](https://mraffaello.github.io/apotheke/docs/guides/monorepos)
-- [Prettier plugin](https://mraffaello.github.io/apotheke/docs/guides/prettier-plugin)
-- [Config reference](https://mraffaello.github.io/apotheke/docs/reference/config)
+- [Configuring groups](https://marcoraffaello.com/apotheke/docs/guides/groups)
+- [Aliases and tsconfig paths](https://marcoraffaello.com/apotheke/docs/guides/aliases)
+- [Monorepos](https://marcoraffaello.com/apotheke/docs/guides/monorepos)
+- [Prettier plugin](https://marcoraffaello.com/apotheke/docs/guides/prettier-plugin)
+- [Config reference](https://marcoraffaello.com/apotheke/docs/reference/config)
 
 ## Agent skill
 

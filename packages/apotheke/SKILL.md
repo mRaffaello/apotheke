@@ -9,7 +9,7 @@ Apotheke is **Prettier for imports** — deterministic, configurable import orga
 
 This skill installs and configures it by analyzing the project's actual imports, then wiring it up as a prettier plugin.
 
-Full documentation: <https://mraffaello.github.io/apotheke>
+Full documentation: <https://marcoraffaello.com/apotheke>
 
 ## Step 1 — Detect project structure (monorepo vs single package)
 
@@ -246,4 +246,4 @@ Report:
 - Whether `--write` was run
 
 Point the user at the documentation for anything beyond this setup:
-<https://mraffaello.github.io/apotheke>
+<https://marcoraffaello.com/apotheke>
