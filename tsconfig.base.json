@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true
+    }
+}

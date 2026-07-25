@@ -1,2 +1,2 @@
-npx tsc
+pnpm typecheck
 pnpm test

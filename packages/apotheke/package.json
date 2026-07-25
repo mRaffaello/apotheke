@@ -1,0 +1,44 @@
+{
+    "name": "apotheke",
+    "version": "0.0.1",
+    "description": "JavaScript/TypeScript import organizer — prettier plugin + CLI",
+    "type": "module",
+    "repository": {
+        "url": "https://github.com/mRaffaello/apotheke"
+    },
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "apotheke": "./dist/cli.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:unit": "vitest run tests/unit",
+        "test:e2e": "vitest run tests/e2e/e2e.test.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^25.6.0",
+        "tsup": "^8.5.1",
+        "vitest": "^4.1.5"
+    },
+    "peerDependencies": {
+        "prettier": ">=3"
+    },
+    "peerDependenciesMeta": {
+        "prettier": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "fast-glob": "^3.3.3",
+        "oxc-parser": "^0.129.0"
+    }
+}
