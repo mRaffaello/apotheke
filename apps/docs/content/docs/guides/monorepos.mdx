@@ -1,0 +1,113 @@
+---
+title: Monorepos
+description: One root config for shared groups, per-package overrides via extends.
+---
+
+In a monorepo most groups are identical everywhere — React is React in every
+app — while a handful are package-specific. `extends` lets you say that once.
+
+## Root config
+
+Put the groups every package shares at the repo root:
+
+```js title="apotheke.config.mjs"
+export default {
+    groups: [
+        { name: 'React', match: ['react', 'react-dom'] },
+        { name: 'Api', match: ['@tanstack/react-query', 'axios'] },
+        { name: 'Workspace', match: ['@acme/*', '@acme/*/**'] }
+    ],
+    groupSeparator: true,
+    groupComments: true
+};
+```
+
+## Package config
+
+Each package extends it and adds only what is local:
+
+```js title="apps/web/apotheke.config.mjs"
+export default {
+    extends: '../../apotheke.config.mjs',
+    groups: [{ name: 'Components', match: ['**/components/**'] }]
+};
+```
+
+The path is resolved relative to the file doing the extending. Missing parents
+fail loudly with the path it tried, rather than silently falling back to
+defaults.
+
+## How merging works
+
+Understanding the merge rules matters, because they are not what you might
+guess:
+
+- **Groups are merged by name.** A child group whose `name` matches a parent
+  group **replaces** that parent group in place, keeping the parent's position
+  in the order.
+- **New names are appended** to the end of the inherited list.
+- **Aliases are shallow-merged**, child wins per key.
+- **Every other option** (`groupSeparator`, `groupComments`, `baseUrl`) is
+  overwritten wholesale by the child when present.
+
+So this:
+
+```js title="apps/web/apotheke.config.mjs"
+export default {
+    extends: '../../apotheke.config.mjs',
+    groups: [
+        { name: 'React', match: ['react', 'react-dom', 'react-router'] },
+        { name: 'Components', match: ['**/components/**'] }
+    ]
+};
+```
+
+produces the order `React` (with the widened match), `Api`, `Workspace`,
+`Components` — **not** React last. Redefining a group is an edit, not a
+re-append.
+
+<Callout type="warn" title="You cannot remove an inherited group">
+  There is no delete syntax. To drop a root group from one package, either move
+  it out of the root config into the packages that want it, or override it with
+  a `match` that cannot fire.
+</Callout>
+
+`extends` chains — a parent may itself extend a grandparent, and tsconfig
+aliases are collected at every level.
+
+## Config discovery
+
+Both the CLI and the plugin walk **up** from each file's directory until they
+find `apotheke.config.mjs` or `apotheke.config.js`. In a monorepo that means a
+file in `apps/web/src/` picks up `apps/web/apotheke.config.mjs` if it exists,
+otherwise the root one. Nothing needs wiring per package.
+
+Only `.mjs` and `.js` are discovered. A `.ts` config is never loaded — Node,
+where Prettier runs, cannot `import()` TypeScript.
+
+<Callout type="warn" title="Alias targets resolve against the working directory under the plugin">
+  Relative alias targets (`'@': './src'`) are resolved against the nearest
+  directory containing a `package.json` when you use the CLI, but against
+  `process.cwd()` when you use the Prettier plugin. Running `prettier` from the
+  repo root therefore resolves `@/hooks/x` to `<root>/src/hooks/x` rather than
+  `<package>/src/hooks/x`, and a `**/hooks/**` group can miss.
+
+  If a path group works via the CLI but not through Prettier, this is why. The
+  reliable fix is to make each package's alias targets unambiguous from the
+  repo root — for example `'@': './apps/web/src'` in that package's own config.
+</Callout>
+
+## Running it across the workspace
+
+```json title="package.json"
+{
+    "scripts": {
+        "format": "prettier --write '{apps,packages}/**/*.{ts,tsx}'",
+        "format:check": "prettier --check '{apps,packages}/**/*.{ts,tsx}'"
+    }
+}
+```
+
+A single brace pattern is better than two separate globs here: Prettier exits
+with an error if any one pattern matches nothing, which breaks the moment a
+workspace folder is empty.

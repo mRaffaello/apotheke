@@ -1,0 +1,82 @@
+---
+title: Editor and pre-commit
+description: Format on save in VS Code, and enforce order before commits land.
+---
+
+## VS Code on save
+
+With the plugin in your Prettier config, the
+[Prettier extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+picks it up automatically — it calls `prettier.format()`, which runs the
+`preprocess` hook.
+
+```json title=".vscode/settings.json"
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": false
+    }
+}
+```
+
+<Callout type="warn" title="Turn off the built-in organiser">
+    `source.organizeImports` is TypeScript's own import sorter. Left enabled it runs alongside
+    apotheke and the two will fight — imports jump between orderings depending on which ran last.
+    Setting it to `false` is not optional.
+</Callout>
+
+## Pre-commit with lint-staged
+
+With the plugin, one entry covers everything:
+
+```json title="package.json"
+{
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": ["prettier --write"]
+    }
+}
+```
+
+Without Prettier, call apotheke directly:
+
+```json title="package.json"
+{
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": ["apotheke --write"]
+    }
+}
+```
+
+On Prettier 2, run both in sequence — apotheke first:
+
+```json title="package.json"
+{
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": ["apotheke --write", "prettier --write"]
+    }
+}
+```
+
+## Husky
+
+```sh title=".husky/pre-commit"
+pnpm exec lint-staged
+```
+
+Or skip lint-staged and check the whole repo, which is slower but catches files
+an incomplete stage would miss:
+
+```sh title=".husky/pre-commit"
+pnpm format:check
+```
+
+## CI
+
+Whichever you use locally, verify in CI too — hooks are bypassable with
+`--no-verify` and do not exist for contributors who never ran `pnpm install`.
+
+```yaml title=".github/workflows/ci.yml"
+- run: pnpm format:check # plugin route
+- run: npx apotheke --check 'src/**/*.{ts,tsx}' # CLI route
+```

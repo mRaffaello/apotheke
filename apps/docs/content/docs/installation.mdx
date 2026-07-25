@@ -1,0 +1,41 @@
+---
+title: Installation
+description: Install apotheke and pick between the Prettier plugin and the CLI.
+---
+
+Install apotheke as a dev dependency:
+
+```sh
+pnpm add -D apotheke
+# npm install -D apotheke
+# bun add -D apotheke
+# yarn add -D apotheke
+```
+
+Prettier is an optional peer dependency — you only need it if you use the
+plugin.
+
+## Requirements
+
+- Node.js 18 or later
+- Prettier 3 or later for the plugin. Prettier 2 has no async `preprocess`
+  hook; see the [v2 fallback](/docs/guides/prettier-plugin).
+
+## Which entry point?
+
+<Cards>
+    <Card title="Prettier plugin" href="/docs/guides/prettier-plugin">
+        Recommended. One `prettier --write` organises imports and formats code in a single pass, and
+        editor format-on-save works with no extra setup.
+    </Card>
+    <Card title="CLI" href="/docs/guides/cli">
+        For repos that do not use Prettier, or for CI checks and one-off codemods.
+    </Card>
+</Cards>
+
+Both read the same `apotheke.config.mjs`, so switching later costs nothing.
+
+## Next
+
+You still need a config — apotheke ships no default groups and errors if it
+cannot find one. Continue to the [quick start](/docs/quick-start).

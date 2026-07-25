@@ -1,0 +1,101 @@
+---
+title: Prettier plugin
+description: Run import organization inside Prettier, in a single pass.
+---
+
+apotheke registers as a Prettier plugin that hooks `preprocess`. Prettier hands
+it the source, apotheke rewrites the import block, and Prettier then formats
+the result. One command, correct order, no fighting between two tools.
+
+```json title=".prettierrc.json"
+{
+    "plugins": ["apotheke"]
+}
+```
+
+That is the whole setup. `prettier --write` now organises imports.
+
+## Ordering matters — apotheke goes last
+
+<Callout type="warn" title="apotheke must be the last plugin">
+    Prettier v3 does not merge plugins that define the same parser: the **last** one wins outright.
+    apotheke deliberately chains to the previous plugin's `preprocess` before running its own, so it
+    composes correctly — but only if nothing is listed after it. Any plugin placed later silently
+    replaces apotheke and imports stop being organised.
+</Callout>
+
+```json title="Correct"
+{
+    "plugins": ["prettier-plugin-tailwindcss", "apotheke"]
+}
+```
+
+```json title="Broken — tailwind wins, apotheke never runs"
+{
+    "plugins": ["apotheke", "prettier-plugin-tailwindcss"]
+}
+```
+
+There is no warning when you get this wrong. If imports stop moving after
+adding a plugin, check the array order first.
+
+## Which files it touches
+
+The plugin overrides the `typescript`, `babel`, `babel-ts` and `babel-flow`
+parsers, which covers `.ts`, `.tsx`, `.js`, `.jsx` and `.mjs`. Other Prettier
+parsers — CSS, JSON, Markdown, YAML — pass through untouched.
+
+## Failures are silent by design
+
+If the plugin throws for any reason — no config found, a syntax error in
+`apotheke.config.mjs`, an unparseable source file — it catches the error and
+returns the file **unchanged**. Prettier never breaks because of apotheke.
+
+The trade-off is that a broken config looks identical to a working one that had
+nothing to do. When imports are not moving and the plugin order is right, run
+the CLI on the same file — it reports errors instead of swallowing them:
+
+```sh
+npx apotheke --diff src/App.tsx
+```
+
+## Prettier 2 fallback
+
+The plugin needs Prettier 3, which introduced async `preprocess`. On Prettier 2
+run the CLI before Prettier instead, in sequence:
+
+```json title="package.json"
+{
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": ["apotheke --write", "prettier --write"]
+    }
+}
+```
+
+## Trying it without installing
+
+Point Prettier at a built plugin file directly:
+
+```sh
+npx prettier@3 \
+  --plugin /path/to/apotheke/dist/index.js \
+  --write 'src/App.tsx'
+```
+
+## Local development against a checkout
+
+From an apotheke clone:
+
+```sh
+pnpm install && pnpm build
+pnpm --filter apotheke exec pnpm link --global
+```
+
+Then in the target repo:
+
+```sh
+pnpm link --global apotheke
+```
+
+Re-run `pnpm build` in the apotheke checkout after each source change — the
+plugin loads `dist/`, not the TypeScript sources.

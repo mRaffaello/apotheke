@@ -1,0 +1,71 @@
+---
+title: Aliases and tsconfig paths
+description: Why @/hooks/use-user groups with the folder it points at.
+---
+
+Path patterns like `**/hooks/**` are only useful if apotheke can tell that
+`@/hooks/use-user` and `../../hooks/use-user` are the same folder. It can,
+because it resolves aliases before matching.
+
+## tsconfig is read automatically
+
+On startup apotheke looks for `tsconfig.json` next to your config file and
+pulls in `compilerOptions.paths` and `compilerOptions.baseUrl`. Given:
+
+```json title="tsconfig.json"
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"],
+            "~/lib/*": ["./src/lib/*"]
+        }
+    }
+}
+```
+
+both `@/hooks/use-user` and `~/lib/format` resolve to real paths under `src/`,
+and a `**/hooks/**` pattern matches the first one. You usually do not need to
+configure anything.
+
+<Callout title="Comments are tolerated">
+    The tsconfig reader strips `//` and `/* */` comments before parsing, so a commented tsconfig
+    works. Only `tsconfig.json` is read — `jsconfig.json` is not.
+</Callout>
+
+## Declaring aliases manually
+
+Set `aliases` when there is no tsconfig, or when your bundler defines aliases
+TypeScript does not know about:
+
+```js title="apotheke.config.mjs"
+export default {
+    aliases: {
+        '@': './src',
+        '#internal': './packages/internal/src'
+    },
+    groups: [{ name: 'Hooks', match: ['**/hooks/**'] }]
+};
+```
+
+Keys are written **without** the trailing `/*` — `'@'`, not `'@/*'`.
+
+## Precedence
+
+Aliases you write by hand win. When the same key exists in both places, the
+value from `apotheke.config.mjs` is kept and the tsconfig entry is ignored, so
+you can override a path mapping without editing tsconfig.
+
+`baseUrl` behaves the same way: a value in your config takes precedence over
+the one in tsconfig.
+
+## Multiple targets
+
+TypeScript allows an array of fallback locations per alias:
+
+```json
+{ "paths": { "@/*": ["./src/*", "./generated/*"] } }
+```
+
+apotheke uses the **first** entry only. If grouping depends on the second
+location, declare that alias explicitly in `aliases`.

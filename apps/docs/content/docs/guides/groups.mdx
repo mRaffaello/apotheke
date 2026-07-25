@@ -1,0 +1,121 @@
+---
+title: Configuring groups
+description: How matching, ordering, sorting and deduplication actually behave.
+---
+
+A group is a name and a list of glob patterns:
+
+```js
+{ name: 'Api', match: ['**/api/**', '@tanstack/react-query', 'axios'] }
+```
+
+Every import is tested against each group **in array order**, and the **first
+match wins**. The output groups then appear in that same order, so the config
+file reads exactly like the top of your files.
+
+## Ordering is the whole design
+
+Because the first match wins, a broad pattern early in the array will swallow
+imports you meant for a later group.
+
+```js title="Wrong — Forms never matches"
+groups: [
+    { name: 'React', match: ['react', 'react-*'] },
+    { name: 'Forms', match: ['react-hook-form'] } // unreachable
+]
+```
+
+`react-*` already claimed `react-hook-form`. Two ways out — put the specific
+group first:
+
+```js title="Right — specific before general"
+groups: [
+    { name: 'Forms', match: ['react-hook-form', 'zod'] },
+    { name: 'React', match: ['react', 'react-*'] }
+]
+```
+
+or narrow the greedy pattern:
+
+```js title="Also right — no wildcard"
+groups: [
+    { name: 'React', match: ['react', 'react-dom'] },
+    { name: 'Forms', match: ['react-hook-form', 'zod'] }
+]
+```
+
+## What you can match
+
+Patterns are globs tested against the import specifier.
+
+| Pattern          | Matches                                            |
+| ---------------- | -------------------------------------------------- |
+| `react`          | exactly `react`                                     |
+| `react-*`        | `react-dom`, `react-hook-form`, …                   |
+| `@tanstack/*`    | any single segment under the scope                  |
+| `better-auth/**` | any depth of subpath                                |
+| `**/hooks/**`    | relative or aliased paths containing a `hooks` dir  |
+| `node:*`         | Node builtins written with the `node:` prefix       |
+
+Path patterns work on relative imports (`../hooks/use-user`) and on aliased
+ones (`@/hooks/use-user`) — see [aliases](/docs/guides/aliases).
+
+## The implicit Others group
+
+Imports matching no group collect in a trailing group named **Others**. You do
+not declare it and cannot lose an import by forgetting a pattern. If Others is
+large, that is a signal your config is under-described.
+
+## Side-effect imports
+
+Bare imports with no bindings — `import './styles.css'` — are **always emitted
+first**, above every group, regardless of your config. Their relative position
+often matters (CSS cascade, polyfills), so apotheke never reorders them among
+themselves.
+
+## Sorting within a group
+
+Within each group, imports are sorted alphabetically by specifier. Named
+imports inside a single statement are sorted alphabetically too, with inline
+type specifiers floating ahead of value ones. Both behaviours are
+unconditional — there is no option to disable them.
+
+Type-only imports float to the top of their group:
+
+```ts
+import type { ApothekeConfig } from './types';
+import { formatImports } from './format';
+```
+
+## Deduplication
+
+Two statements importing from the same specifier are merged into one:
+
+```ts title="Before"
+import { useState } from 'react';
+import { useEffect } from 'react';
+```
+
+becomes
+
+```ts title="After"
+import { useEffect, useState } from 'react';
+```
+
+Value and type imports of the same specifier stay separate, because collapsing
+them changes meaning under `verbatimModuleSyntax`:
+
+```ts
+import type { FC } from 'react';
+import { useState } from 'react';
+```
+
+## Presentation
+
+Two booleans control the cosmetics, both defaulting to `true`:
+
+- `groupSeparator` — blank line between groups
+- `groupComments` — a `// GroupName` header above each group
+
+Set `groupComments` to `false` if you want the ordering without the comment
+noise.

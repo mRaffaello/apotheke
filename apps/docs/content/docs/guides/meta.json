@@ -1,0 +1,12 @@
+{
+    "title": "Guides",
+    "pages": [
+        "groups",
+        "aliases",
+        "monorepos",
+        "prettier-plugin",
+        "cli",
+        "editor-and-hooks",
+        "agent-skill"
+    ]
+}
