@@ -13,9 +13,6 @@
         // Bundler mode
         "allowImportingTsExtensions": true,
 
-        // tsup injects baseUrl during DTS builds, deprecated in TS 6.0
-        "ignoreDeprecations": "6.0",
-
         // Some stricter flags (disabled by default)
         "noUnusedLocals": false,
         "noUnusedParameters": false,
