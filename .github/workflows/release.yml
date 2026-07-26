@@ -23,11 +23,16 @@ jobs:
       # passing it here as well makes the action fail on a version mismatch.
       - uses: pnpm/action-setup@v4
 
+      # No registry-url here on purpose. It makes setup-node write an .npmrc
+      # containing "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}", and
+      # with no token in the environment that line resolves to an empty
+      # credential. npm then authenticates as an anonymous user instead of
+      # falling through to OIDC, and the registry rejects the PUT as a 404.
+      # registry.npmjs.org is already the default registry.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
       # Trusted publishing needs npm >= 11.5.1; Node 22 still ships npm 10.x.
       - name: Upgrade npm for trusted publishing
@@ -65,9 +70,13 @@ jobs:
       #
       # npmjs.com must list this repository and workflow filename as a trusted
       # publisher for the package, otherwise the registry rejects the publish.
+      #
+      # No --provenance flag: trusted publishing generates and uploads the
+      # provenance attestation on its own, and passing the flag explicitly
+      # opts back into the token-based signing path.
       - name: Publish to npm
         working-directory: packages/apotheke
-        run: npm publish --provenance --access public
+        run: npm publish --access public
 
       - name: Create GitHub Release
         env:
