@@ -1,12 +1,376 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
+
+/*
+ * `shadcn.css` is the Fumadocs preset that bridges the --color-fd-* chrome
+ * variables onto shadcn's --background/--foreground/... token names, so the
+ * palette below drives both the layout chrome and our own components.
+ */
+@import 'fumadocs-ui/css/shadcn.css';
 @import 'fumadocs-ui/css/preset.css';
 
-html {
-  scrollbar-gutter: stable;
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-border-subtle: var(--border-subtle);
+
+    --radius-sm: calc(var(--radius) - 2px);
+    --radius-md: var(--radius);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --font-sans: var(--font-geist);
+    --font-mono: var(--font-fira-code);
+    --font-heading: var(--font-sora);
+    --font-body: var(--font-geist);
 }
 
-html > body[data-scroll-locked] {
-  margin-right: 0px !important;
-  --removed-body-scroll-bar-size: 0px !important;
+:root {
+    --background: oklch(0.99 0 0);
+    --foreground: oklch(0 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0 0 0);
+    --popover: oklch(0.99 0 0);
+    --popover-foreground: oklch(0 0 0);
+    --primary: oklch(0 0 0);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.94 0 0);
+    --secondary-foreground: oklch(0 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.44 0 0);
+    --accent: oklch(0.94 0 0);
+    --accent-foreground: oklch(0 0 0);
+    --destructive: oklch(0.63 0.19 23.03);
+    --border: oklch(0.92 0 0);
+    --input: oklch(0.94 0 0);
+    --ring: oklch(0.55 0 0);
+    --sidebar: oklch(0.99 0 0);
+    --sidebar-foreground: oklch(0 0 0);
+    --sidebar-primary: oklch(0 0 0);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.94 0 0);
+    --sidebar-accent-foreground: oklch(0 0 0);
+    --sidebar-border: oklch(0.94 0 0);
+    --sidebar-ring: oklch(0 0 0);
+    --radius: 0.375rem;
+    --info: hsl(201, 98%, 32%);
+    --info-foreground: hsl(204, 100%, 97%);
+    --success: hsl(155, 90%, 24%);
+    --success-foreground: hsl(145, 81%, 96%);
+    --warning: hsl(22, 92%, 37%);
+    --warning-foreground: hsl(45, 100%, 96%);
+    --border-subtle: hsl(0, 0%, 0%, 0.05);
+
+    /*
+     * Shared page rail. The home navbar and every homepage section align to
+     * these two values — change them here and the whole page follows.
+     */
+    --page-width: 72rem;
+    --page-gutter: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    :root {
+        --page-gutter: 2.5rem;
+    }
+}
+
+.dark {
+    --background: oklch(0 0 0);
+    --foreground: oklch(1 0 0);
+    --card: oklch(0.14 0 0);
+    --card-foreground: oklch(1 0 0);
+    --popover: oklch(0.18 0 0);
+    --popover-foreground: oklch(1 0 0);
+    --primary: oklch(1 0 0);
+    --primary-foreground: oklch(0 0 0);
+    --secondary: oklch(0.25 0 0);
+    --secondary-foreground: oklch(1 0 0);
+    --muted: oklch(0.23 0 0);
+    --muted-foreground: oklch(0.72 0 0);
+    --accent: oklch(0.32 0 0);
+    --accent-foreground: oklch(1 0 0);
+    --destructive: oklch(0.69 0.2 23.91);
+    --border: oklch(0.26 0 0);
+    --input: oklch(0.32 0 0);
+    --ring: oklch(0.55 0 0);
+    --sidebar: oklch(0.18 0 0);
+    --sidebar-foreground: oklch(1 0 0);
+    --sidebar-primary: oklch(1 0 0);
+    --sidebar-primary-foreground: oklch(0 0 0);
+    --sidebar-accent: oklch(0.32 0 0);
+    --sidebar-accent-foreground: oklch(1 0 0);
+    --sidebar-border: oklch(0.32 0 0);
+    --sidebar-ring: oklch(0.72 0 0);
+    --radius: 0.375rem;
+    --info: hsl(199, 97%, 74%);
+    --info-foreground: hsl(201, 83%, 14%);
+    --success: hsl(148, 63%, 67%);
+    --success-foreground: hsl(156, 79%, 11%);
+    --warning: hsl(42, 99%, 65%);
+    --warning-foreground: hsl(17, 79%, 17%);
+    --border-subtle: hsl(0, 0%, 100%, 0.1);
+}
+
+@layer base {
+    html {
+        scrollbar-gutter: stable;
+    }
+
+    html > body[data-scroll-locked] {
+        margin-right: 0px !important;
+        --removed-body-scroll-bar-size: 0px !important;
+    }
+
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-body);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    h1 {
+        font-family: var(--font-heading);
+        font-size: 2.25rem;
+        line-height: 1.15;
+        letter-spacing: -0.025em;
+        font-weight: 700;
+    }
+
+    h2 {
+        font-family: var(--font-heading);
+        font-size: 1.875rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        font-weight: 600;
+    }
+
+    h3 {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+        font-weight: 600;
+    }
+
+    h4 {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+        font-weight: 500;
+    }
+
+    h5,
+    h6 {
+        font-family: var(--font-heading);
+        letter-spacing: -0.01em;
+    }
+
+    p {
+        font-family: var(--font-body);
+        font-size: 1rem;
+        line-height: 1.6;
+        font-weight: 400;
+    }
+
+    code,
+    pre,
+    kbd {
+        font-family: var(--font-mono);
+    }
+}
+
+@layer utilities {
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bg-grid-pattern {
+        background-image:
+            linear-gradient(to right, oklch(0 0 0 / 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, oklch(0 0 0 / 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .dark .bg-grid-pattern {
+        background-image:
+            linear-gradient(to right, oklch(1 0 0 / 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, oklch(1 0 0 / 0.05) 1px, transparent 1px);
+    }
+}
+
+/*
+ * Fumadocs chrome overrides — the layout ships its own sidebar/TOC treatment,
+ * these bring it in line with the theme above.
+ */
+
+/*
+ * Home navbar adopts the shared page rail, so the logo sits on the same left
+ * edge as the hero headline and every section heading below it.
+ */
+#nd-home-layout {
+    --fd-layout-width: var(--page-width);
+}
+
+#nd-home-layout #nd-nav nav > div {
+    padding-inline: var(--page-gutter);
+}
+
+/*
+ * A 1600px shell, a 288px (w-72) rail and a 240px table of contents.
+ * Fumadocs sets these per-slot with `layout:` utilities, so the overrides
+ * have to land on the same elements to win.
+ */
+#nd-docs-layout {
+    --fd-layout-width: 1600px;
+}
+
+@media (min-width: 768px) {
+    #nd-docs-layout [data-sidebar-placeholder],
+    #nd-docs-layout {
+        --fd-sidebar-width: 288px;
+    }
+}
+
+@media (min-width: 1280px) {
+    #nd-docs-layout #nd-toc,
+    #nd-docs-layout {
+        --fd-toc-width: 240px;
+    }
+}
+
+/* Content column: 52rem, a comfortable prose measure. */
+#nd-docs-layout article[data-full='false'] {
+    max-width: 52rem;
+}
+
+#nd-sidebar {
+    background-color: color-mix(in oklab, var(--sidebar) 40%, var(--background));
+}
+
+/*
+ * Section labels and folder triggers: small, uppercase, tracked out. The
+ * search trigger is also an aria-expanded button, so it is excluded.
+ */
+#nd-sidebar button[aria-expanded]:not([aria-haspopup='dialog']),
+#nd-sidebar [data-separator] {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+/* Search trigger: taller, softer, sunken field. */
+#nd-sidebar [data-search-full] {
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    border-color: color-mix(in oklab, var(--border) 60%, transparent);
+    background-color: color-mix(in oklab, var(--muted) 30%, transparent);
+    padding-inline: 0.75rem;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+}
+
+.dark #nd-sidebar [data-search-full] {
+    background-color: oklch(1 0 0 / 0.03);
+    box-shadow: none;
+}
+
+/*
+ * Active item: filled accent pill plus a rounded primary marker on the leading
+ * edge, replacing the default primary/10 tint and full-height hairline.
+ */
+#nd-sidebar a[data-active='true'] {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground);
+    font-weight: 500;
+}
+
+#nd-sidebar a[data-active='true']::before {
+    background-color: var(--primary) !important;
+    inset-block: auto !important;
+    top: 50% !important;
+    height: 1rem !important;
+    width: 2px !important;
+    transform: translateY(-50%);
+    border-radius: 9999px;
+    inset-inline-start: 0 !important;
+}
+
+#nd-sidebar a:not([data-active='true']):hover {
+    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+}
+
+/* Table of contents: bare uppercase heading, no leading icon. */
+#nd-toc #toc-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+#nd-toc #toc-title > svg {
+    display: none;
+}
+
+/* Nudge for the hero scroll cue. */
+@keyframes scroll-hint {
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(4px);
+        opacity: 0.6;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

@@ -1,8 +1,12 @@
 <p align="left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=apotheke&subtitle=Deterministic%20import%20organization%20for%20JavaScript%20and%20TypeScript&logo=data:image/svg%2Bxml;base64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iY3VycmVudENvbG9yIj48cGF0aCBkPSJNNC4yMjIgMTEuMjkzIDExLjI5MyA0LjIyMmE1IDUgMCAwIDEgNy4wNzEgNy4wNzFsLTcuMDcxIDcuMDcxYTUgNSAwIDAgMS03LjA3MS03LjA3MVptMS40MTQgMS40MTRhMyAzIDAgMSAwIDQuMjQzIDQuMjQzbDIuODI4LTIuODI5LTQuMjQyLTQuMjQyLTIuODI5IDIuODI4WiIvPjwvc3ZnPgo=&logoColor=a78bfa&align=left&mode=dark" />
-    <img alt="apotheke — deterministic import organization for JavaScript and TypeScript" src="https://shieldcn.dev/header/graph.svg?title=apotheke&subtitle=Deterministic%20import%20organization%20for%20JavaScript%20and%20TypeScript&logo=data:image/svg%2Bxml;base64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iY3VycmVudENvbG9yIj48cGF0aCBkPSJNNC4yMjIgMTEuMjkzIDExLjI5MyA0LjIyMmE1IDUgMCAwIDEgNy4wNzEgNy4wNzFsLTcuMDcxIDcuMDcxYTUgNSAwIDAgMS03LjA3MS03LjA3MVptMS40MTQgMS40MTRhMyAzIDAgMSAwIDQuMjQzIDQuMjQzbDIuODI4LTIuODI5LTQuMjQyLTQuMjQyLTIuODI5IDIuODI4WiIvPjwvc3ZnPgo=&logoColor=7c3aed&align=left&mode=light" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/wordmark-dark.png" />
+    <img alt="apotheke" src="https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/wordmark.png" width="320" />
   </picture>
+</p>
+
+<p align="left">
+  <em>Deterministic import organization for JavaScript and TypeScript.</em>
 </p>
 
 <p align="left">

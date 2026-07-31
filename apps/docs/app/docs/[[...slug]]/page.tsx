@@ -27,10 +27,14 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     const markdownUrl = getPageMarkdownUrl(page).url;
 
     return (
-        <DocsPage toc={page.data.toc} full={page.data.full}>
-            <DocsTitle>{page.data.title}</DocsTitle>
-            <DocsDescription className='mb-0'>{page.data.description}</DocsDescription>
-            <div className='flex flex-row gap-2 items-center border-b pb-6'>
+        <DocsPage toc={page.data.toc} full={page.data.full} breadcrumb={{ enabled: false }}>
+            <DocsTitle className='text-4xl font-bold tracking-tight text-balance sm:text-5xl'>
+                {page.data.title}
+            </DocsTitle>
+            <DocsDescription className='text-muted-foreground mb-0 max-w-2xl text-lg leading-8 text-pretty sm:text-xl'>
+                {page.data.description}
+            </DocsDescription>
+            <div className='border-border/60 flex flex-row items-center gap-2 border-b pb-8'>
                 <MarkdownCopyButton markdownUrl={markdownUrl} />
                 <ViewOptionsPopover
                     markdownUrl={markdownUrl}

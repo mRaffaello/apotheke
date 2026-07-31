@@ -6,23 +6,24 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 // Internal
 import { appName, gitConfig, npmUrl } from './shared';
-import logo from '@/public/logo.png';
+import wordmark from '@/public/wordmark.png';
 
 export function baseOptions(): BaseLayoutProps {
     return {
         nav: {
             title: (
-                <span className='inline-flex items-center gap-2'>
-                    <Image src={logo} alt='' width={22} height={22} className='rounded-md' />
-                    <span className='font-semibold tracking-tight'>{appName}</span>
-                </span>
+                // The wordmark already reads "apotheke", so it carries the name
+                // on its own. It ships as solid black, hence the dark-mode flip.
+                <Image src={wordmark} alt={appName} priority className='h-4 w-auto dark:invert' />
             )
         },
         links: [
             {
                 text: 'Documentation',
                 url: '/docs',
-                active: 'nested-url'
+                active: 'nested-url',
+                // Navbar only — the docs sidebar is already the documentation.
+                on: 'nav'
             },
             {
                 text: 'npm',
