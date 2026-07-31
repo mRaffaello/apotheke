@@ -74,6 +74,12 @@ jobs:
       # No --provenance flag: trusted publishing generates and uploads the
       # provenance attestation on its own, and passing the flag explicitly
       # opts back into the token-based signing path.
+      # The README lives at the repository root so GitHub shows it on the
+      # landing page, but npm only reads the one next to package.json. Copy it
+      # in at publish time rather than keeping a second copy in the tree.
+      - name: Stage README for the published package
+        run: cp README.md packages/apotheke/README.md
+
       - name: Publish to npm
         working-directory: packages/apotheke
         run: npm publish --access public

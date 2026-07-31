@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "apps/docs/**"
-      - "packages/apotheke/README.md"
+      - "README.md"
       - "packages/apotheke/SKILL.md"
       - ".github/workflows/docs.yml"
   workflow_dispatch:

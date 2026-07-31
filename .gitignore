@@ -4,6 +4,9 @@ node_modules
 # e2e fixture repos (cloned at test time, pinned by commit hash in e2e.test.ts)
 packages/apotheke/tests/e2e/repos/
 
+# copied from the root README at publish time (see release.yml)
+packages/apotheke/README.md
+
 # turborepo
 .turbo/
 
