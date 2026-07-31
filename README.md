@@ -22,13 +22,6 @@
 apotheke sorts every import into them, the same way, in every file. Run it as a
 Prettier plugin or as a standalone CLI.
 
-📖 **[Read the documentation →](https://marcoraffaello.com/apotheke)**
-
-## The idea
-
-Import blocks rot. apotheke rewrites them from your config, not from a fixed
-opinion about what "correct" order means:
-
 ```ts
 // Before
 import { useQuery } from '@tanstack/react-query';
@@ -52,96 +45,20 @@ import { useQuery } from '@tanstack/react-query';
 import { createRoute } from '@tanstack/react-router';
 ```
 
-Note what that example does: `../api/tsr` and `@tanstack/react-query` land in
-the same group. Grouping is by **role in your app**, not by whether a module is
-local or comes from `node_modules`.
+Note where `../api/tsr` and `@tanstack/react-query` landed: grouping is by
+**role in your app**, not by whether a module is local or comes from
+`node_modules`.
 
-apotheke is not a replacement for Prettier — it runs _inside_ Prettier as a
-`preprocess` plugin, so one `prettier --write` organises imports and formats
-code in a single pass.
-
-## Install
+## Getting started
 
 ```sh
 pnpm add -D apotheke
 ```
 
-Requires Node.js ≥ 18, and Prettier ≥ 3 if you use the plugin.
+📖 **[Read the documentation →](https://marcoraffaello.com/apotheke)**
 
-## Configure
-
-Describe the groups you want in `apotheke.config.mjs`:
-
-```js
-export default {
-    groups: [
-        { name: 'React', match: ['react', 'react-dom'] },
-        { name: 'Hooks', match: ['**/hooks/**'] },
-        { name: 'Api', match: ['**/api/**', '@tanstack/react-query'] },
-        { name: 'Navigation', match: ['@tanstack/react-router'] }
-    ]
-};
-```
-
-## Run it
-
-**As a Prettier plugin** — apotheke must be **last** in the array:
-
-```json
-{ "plugins": ["apotheke"] }
-```
-
-Covers the `typescript`, `babel`, `babel-ts` and `babel-flow` parsers.
-
-**As a CLI:**
-
-```sh
-apotheke --write 'src/**/*.{ts,tsx}'   # rewrite in place
-apotheke --check 'src/**/*.{ts,tsx}'   # CI — exit 1 if anything would change
-apotheke --diff  'src/**/*.{ts,tsx}'   # preview without writing
-```
-
-## How grouping works
-
-- Groups are matched **in order**, and the first match wins.
-- Side-effect imports (`import './styles.css'`) always come first.
-- Anything unmatched collects in a trailing `Others` group.
-- Within a group, imports are sorted alphabetically, `import type` first, and
-  duplicate specifiers are merged.
-- Named specifiers inside a statement are sorted too, types first.
-- `tsconfig.json` `paths` and `baseUrl` are read automatically, so `@/hooks/…`
-  matches a `**/hooks/**` pattern without extra configuration.
-
-## Configuration reference
-
-| Option           | Type                     | Description                                                                       |
-| ---------------- | ------------------------ | --------------------------------------------------------------------------------- |
-| `groups`         | `{ name, match[] }[]`    | Ordered group definitions. Required.                                              |
-| `extends`        | `string`                 | Path to a base config to merge with — same-name groups override, new ones append. |
-| `aliases`        | `Record<string, string>` | Extra path aliases, merged over the ones from `tsconfig.json`.                    |
-| `baseUrl`        | `string`                 | Root for alias resolution. Defaults to the `tsconfig.json` value.                 |
-| `groupSeparator` | `boolean`                | Blank line between groups.                                                        |
-| `groupComments`  | `boolean`                | Emit the `// GroupName` comment above each group.                                 |
-
-Full reference: **[marcoraffaello.com/apotheke/docs/reference/config](https://marcoraffaello.com/apotheke/docs/reference/config)**
-
-## Documentation
-
-- [Configuring groups](https://marcoraffaello.com/apotheke/docs/guides/groups)
-- [Aliases and tsconfig paths](https://marcoraffaello.com/apotheke/docs/guides/aliases)
-- [Monorepos](https://marcoraffaello.com/apotheke/docs/guides/monorepos)
-- [Prettier plugin](https://marcoraffaello.com/apotheke/docs/guides/prettier-plugin)
-- [Config reference](https://marcoraffaello.com/apotheke/docs/reference/config)
-
-## Agent skill
-
-This package ships a `SKILL.md` that teaches a coding agent to scan your
-codebase, propose a group config and wire everything up:
-
-```sh
-mkdir -p .claude/skills/setup-apotheke
-cp node_modules/apotheke/SKILL.md .claude/skills/setup-apotheke/SKILL.md
-```
+The [quick start](https://marcoraffaello.com/apotheke/docs/quick-start) goes
+from an empty config to organised imports in about two minutes.
 
 ## Development
 
