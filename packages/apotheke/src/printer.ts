@@ -1,5 +1,6 @@
 // Internal
 import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
+import { SIDE_EFFECTS_BLOCK } from './types';
 
 export function detectQuoteChar(source: string): "'" | '"' {
     const m = source.match(/from\s*(["'])/);
@@ -23,10 +24,14 @@ export function printGroups(
     for (const group of groups) {
         const importLines: string[] = [];
 
+        // A held-in-place run of bare imports is not a configured group, so it
+        // gets no header — and one per run would read as noise anyway.
+        const headed = useComments && group.name !== SIDE_EFFECTS_BLOCK;
+
         for (let i = 0; i < group.imports.length; i++) {
             const node = group.imports[i]!;
 
-            if (i === 0 && useComments) {
+            if (i === 0 && headed) {
                 importLines.push(`// ${group.name}\n${buildImportStatement(node, q)}`);
                 continue;
             }

@@ -34,3 +34,9 @@ export interface GroupedImports {
     name: string;
     imports: ImportNode[];
 }
+
+// Implicit block names, not user-definable. OTHERS_GROUP trails the configured
+// groups; SIDE_EFFECTS_BLOCK labels a run of bare imports held in place, and is
+// printed without a header since it is not a group the user named.
+export const OTHERS_GROUP = 'Others';
+export const SIDE_EFFECTS_BLOCK = 'SideEffects';

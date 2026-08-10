@@ -1,4 +1,3 @@
-// SideEffects
 import './global.css';
 
 // Next

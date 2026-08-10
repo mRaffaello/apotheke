@@ -69,11 +69,85 @@ const x = 1;
         expect(result).toContain(`const mod = await import('./heavy');`);
     });
 
-    test('puts side-effect imports first', () => {
-        const source = `import React from 'react';\nimport './styles.css';\n`;
+    test('leaves side-effect imports at the top when that is where they were', () => {
+        const source = `import './styles.css';\nimport React from 'react';\n`;
         const result = formatImports(source, config);
         const lines = result.split('\n').filter(l => l.startsWith('import'));
         expect(lines[0]).toBe(`import './styles.css';`);
+    });
+
+    test('does not hoist a side-effect import above a value import that preceded it', () => {
+        // ./App reaches stylesheets of its own through the components it imports,
+        // which apotheke cannot see, so it has to stay ahead of ./styles.css.
+        const source = `import App from './App';\nimport './styles.css';\n`;
+        const result = formatImports(source, config);
+        const lines = result.split('\n').filter(l => l.startsWith('import'));
+        expect(lines).toEqual([`import App from './App';`, `import './styles.css';`]);
+    });
+
+    test('no value import crosses a side-effect import', () => {
+        // The reported entry-file shape: a component import that pulls vendor CSS,
+        // then app stylesheets, then one more vendor sheet that must stay last.
+        const source =
+            [
+                `import App from './App';`,
+                `import '@edalab/ui/dist/style.css';`,
+                `import './themes/index.css';`,
+                `import { createRoot } from 'react-dom/client';`,
+                `import '@xyflow/react/dist/style.css';`
+            ].join('\n') + '\n';
+
+        const result = formatImports(source, config, { fileDir: '/app/src' });
+        const lines = result.split('\n').filter(l => l.startsWith('import'));
+        expect(lines).toEqual([
+            `import App from './App';`,
+            `import '@edalab/ui/dist/style.css';`,
+            `import './themes/index.css';`,
+            `import { createRoot } from 'react-dom/client';`,
+            `import '@xyflow/react/dist/style.css';`
+        ]);
+    });
+
+    test('groups and sorts value imports within a span between side effects', () => {
+        const source =
+            [
+                `import './one.css';`,
+                `import { useMemo } from 'react';`,
+                `import z from '../../../hooks/z';`,
+                `import a from '../../../hooks/a';`
+            ].join('\n') + '\n';
+
+        const result = formatImports(source, config, { fileDir: '/project/src/pages/x' });
+        expect(result).toContain(
+            "// Hooks\nimport a from '../../../hooks/a';\nimport z from '../../../hooks/z';"
+        );
+        expect(result.split('\n').filter(l => l.startsWith('import'))[0]).toBe(
+            `import './one.css';`
+        );
+    });
+
+    test('emits no header for held-in-place side-effect imports', () => {
+        const source = `import './styles.css';\nimport React from 'react';\n`;
+        expect(formatImports(source, config)).not.toContain('// SideEffects');
+    });
+
+    test('is idempotent with side effects interleaved between value imports', () => {
+        const source =
+            [
+                `import './one.css';`,
+                `import z from '../../../hooks/z';`,
+                `import './two.css';`,
+                `import { useMemo } from 'react';`,
+                `import './three.css';`
+            ].join('\n') + '\n';
+
+        const once = formatImports(source, config, { fileDir: '/project/src/pages/x' });
+        expect(formatImports(once, config, { fileDir: '/project/src/pages/x' })).toBe(once);
+        expect(once.split('\n').filter(l => /^import '\.\/[a-z]+\.css';$/.test(l))).toEqual([
+            `import './one.css';`,
+            `import './two.css';`,
+            `import './three.css';`
+        ]);
     });
 
     test('keeps side-effect imports in source order, not alphabetical', () => {

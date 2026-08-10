@@ -3,16 +3,15 @@ import path from 'node:path';
 
 // Internal
 import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
-
-// Implicit groups, not user-definable: SideEffects leads, Others trails.
-export const SIDE_EFFECTS_GROUP = 'SideEffects';
-export const OTHERS_GROUP = 'Others';
+import { OTHERS_GROUP } from './types';
 
 interface GroupOptions {
     fileDir?: string;
     rootDir?: string;
 }
 
+// Groups one span of value imports. Side-effect imports never reach here: they
+// are held in place by format as barriers between spans.
 export function groupImports(
     imports: ImportNode[],
     config: ApothekeConfig,
@@ -27,11 +26,6 @@ export function groupImports(
     }
 
     const result: GroupedImports[] = [];
-
-    // SideEffects always first, in source order
-    if (buckets.has(SIDE_EFFECTS_GROUP)) {
-        result.push({ name: SIDE_EFFECTS_GROUP, imports: buckets.get(SIDE_EFFECTS_GROUP)! });
-    }
 
     // User-defined groups in config order
     for (const group of config.groups) {
@@ -49,8 +43,6 @@ export function groupImports(
 }
 
 function assignGroup(node: ImportNode, config: ApothekeConfig, options: GroupOptions): string {
-    if (node.isSideEffect) return SIDE_EFFECTS_GROUP;
-
     const canonicalPath = resolveCanonicalPath(node.specifier, config, options);
 
     for (const group of config.groups) {

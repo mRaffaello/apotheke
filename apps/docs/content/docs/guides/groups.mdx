@@ -68,10 +68,40 @@ large, that is a signal your config is under-described.
 
 ## Side-effect imports
 
-Bare imports with no bindings — `import './styles.css'` — are **always emitted
-first**, above every group, regardless of your config. Their relative position
-often matters (CSS cascade, polyfills), so apotheke never reorders them among
-themselves.
+Bare imports with no bindings — `import './styles.css'` — are **left exactly
+where you wrote them**, and nothing moves across them. Their position is
+load-bearing: the CSS cascade resolves equal-specificity rules by source order,
+and a polyfill has to be evaluated before the code that relies on it.
+
+apotheke reads one file at a time, so it cannot see through a specifier. A value
+import may reach stylesheets of its own — `import App from './App'` can pull in
+every component stylesheet in the app — and apotheke has no way to know. Moving
+a bare import above such an import would reorder effects it cannot see, so it
+does not.
+
+A bare import therefore acts as a barrier, and value imports are grouped and
+sorted only among themselves within the span between two barriers:
+
+```ts
+// Before
+import App from './App';
+import './themes/index.css';
+import { createRoot } from 'react-dom/client';
+
+// After — App keeps its place ahead of the stylesheet
+// Internal
+import App from './App';
+
+import './themes/index.css';
+
+// React
+import { createRoot } from 'react-dom/client';
+```
+
+A run of bare imports carries no `//` header, since it is not a group you
+declared. In the common case — every stylesheet imported at the top of an entry
+file — nothing precedes the first barrier, so the result reads exactly as you
+would expect: bare imports first, your groups underneath.
 
 ## Sorting within a group
 

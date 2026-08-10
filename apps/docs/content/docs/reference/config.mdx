@@ -46,9 +46,10 @@ interface GroupConfig {
 
 Required — apotheke has no built-in group set and throws if the config is
 missing. Groups are evaluated in array order and the first match claims the
-import. Unmatched imports fall into an implicit trailing `Others` group;
-side-effect imports go into an implicit leading group and are never reordered
-relative to each other.
+import. Unmatched imports fall into an implicit trailing `Others` group.
+Side-effect imports are not grouped at all: they stay where they were written and
+nothing moves across them — see
+[side-effect imports](/docs/guides/groups#side-effect-imports).
 
 Supported glob syntax:
 

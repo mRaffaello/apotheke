@@ -10,7 +10,7 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { parseSync } from 'oxc-parser';
 
 // Internal
-import type { ApothekeConfig } from '../../src/types';
+import type { ApothekeConfig, ImportNode } from '../../src/types';
 import { formatImports } from '../../src/format';
 import { parseImports } from '../../src/parser';
 
@@ -125,6 +125,36 @@ function checkInvariants(
     const second = formatImports(result, config, { fileDir });
     expect(second).toBe(result);
 
+    // Nothing crosses a side-effect import. A bare import runs its module for
+    // effect and so may a value import, invisibly, through what it pulls in, so
+    // every pairing with a bare import keeps the side it was on.
+    const originalNodes = parseImports(original);
+    const resultNodes = parseImports(result);
+    const firstIndexBySpecifier = (nodes: ImportNode[]) => {
+        const indices = new Map<string, number>();
+        nodes.forEach((node, i) => {
+            if (!indices.has(node.specifier)) indices.set(node.specifier, i);
+        });
+        return indices;
+    };
+    const originalIndex = firstIndexBySpecifier(originalNodes);
+    const resultIndex = firstIndexBySpecifier(resultNodes);
+
+    for (const barrier of originalNodes.filter(n => n.isSideEffect)) {
+        for (const other of originalNodes) {
+            if (other.specifier === barrier.specifier) continue;
+
+            const movedBarrier = resultIndex.get(barrier.specifier);
+            const movedOther = resultIndex.get(other.specifier);
+            if (movedBarrier === undefined || movedOther === undefined) continue;
+
+            const wasBefore = Math.sign(
+                originalIndex.get(barrier.specifier)! - originalIndex.get(other.specifier)!
+            );
+            expect(Math.sign(movedBarrier - movedOther)).toBe(wasBefore);
+        }
+    }
+
     const originalImports = parseImports(original);
     if (originalImports.length > 0) {
         const lastImport = originalImports[originalImports.length - 1]!;
@@ -160,10 +190,13 @@ describe('e2e: sonner', () => {
 
         checkInvariants(source, result, 'index.tsx', sonnerConfig, fileDir);
 
-        const lines = result.split('\n');
-        const importLines = lines.filter(l => l.startsWith('import'));
-        const sideEffectIdx = importLines.findIndex(l => l.includes('styles.css'));
-        expect(sideEffectIdx).toBe(0);
+        // styles.css sits after five value imports in sonner's source, and stays
+        // there: ./assets and ./state may reach stylesheets apotheke cannot see.
+        // Derived from the source rather than hardcoded to a hoisted position.
+        const sourceImportLines = source.split('\n').filter(l => l.startsWith('import'));
+        const expectedIdx = sourceImportLines.findIndex(l => l.includes('styles.css'));
+        const importLines = result.split('\n').filter(l => l.startsWith('import'));
+        expect(importLines.findIndex(l => l.includes('styles.css'))).toBe(expectedIdx);
     });
 
     test('formats hooks.tsx correctly', () => {

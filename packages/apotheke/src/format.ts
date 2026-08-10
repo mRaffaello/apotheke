@@ -1,10 +1,11 @@
 // Internal
-import type { ApothekeConfig, ImportNode } from './types';
+import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
 import { deduplicateImports } from './deduplicator';
-import { groupImports, SIDE_EFFECTS_GROUP } from './grouper';
+import { groupImports } from './grouper';
 import { parseImports } from './parser';
 import { detectQuoteChar, printGroups } from './printer';
 import { sortGroup, sortNamedImports } from './sorter';
+import { SIDE_EFFECTS_BLOCK } from './types';
 
 function collectOrphanSegments(source: string, imports: ImportNode[]): string[] {
     const orphans: string[] = [];
@@ -32,6 +33,56 @@ interface FormatOptions {
     rootDir?: string;
 }
 
+// Side-effect imports are barriers, not a group. A bare import runs its module
+// for effect, and so does a value import that transitively reaches one — a
+// stylesheet imported by a component, a polyfill pulled in by an entry module.
+// apotheke reads one file at a time and cannot see through a specifier, so it
+// cannot know which value imports carry effects of their own. Moving anything
+// across a bare import would therefore risk reordering effects it cannot see.
+//
+// So each run of bare imports is held where the author put it, and the value
+// imports between two runs are grouped and sorted only among themselves. The
+// invariant: no import ever crosses a side-effect import.
+function buildBlocks(
+    imports: ImportNode[],
+    config: ApothekeConfig,
+    options: FormatOptions
+): GroupedImports[] {
+    const blocks: GroupedImports[] = [];
+
+    let values: ImportNode[] = [];
+    let sideEffects: ImportNode[] = [];
+
+    function flushValues() {
+        if (values.length === 0) return;
+        for (const group of groupImports(values, config, options)) {
+            blocks.push({ ...group, imports: sortGroup(group.imports) });
+        }
+        values = [];
+    }
+
+    function flushSideEffects() {
+        if (sideEffects.length === 0) return;
+        blocks.push({ name: SIDE_EFFECTS_BLOCK, imports: sideEffects });
+        sideEffects = [];
+    }
+
+    for (const node of imports) {
+        if (node.isSideEffect) {
+            flushValues();
+            sideEffects.push(node);
+        } else {
+            flushSideEffects();
+            values.push(node);
+        }
+    }
+
+    flushSideEffects();
+    flushValues();
+
+    return blocks;
+}
+
 export function formatImports(
     source: string,
     config: ApothekeConfig,
@@ -54,19 +105,12 @@ export function formatImports(
     // Sort named imports within each node
     const sorted = deduped.map(sortNamedImports);
 
-    // Group
-    const grouped = groupImports(sorted, config, options);
-
-    // Sort within each group, except SideEffects. Their order is load-bearing:
-    // the CSS cascade and polyfill evaluation both follow import order, so
-    // alphabetising them would silently change what the bundle does.
-    const sortedGroups = grouped.map(g =>
-        g.name === SIDE_EFFECTS_GROUP ? g : { ...g, imports: sortGroup(g.imports) }
-    );
+    // Group and sort each span of value imports, keeping side effects in place
+    const blocks = buildBlocks(sorted, config, options);
 
     // Print the new import block
     const q = detectQuoteChar(source);
-    const newImportBlock = printGroups(sortedGroups, config, q);
+    const newImportBlock = printGroups(blocks, config, q);
 
     // Find the original import region in source (first to last import)
     const firstImport = imports[0]!;

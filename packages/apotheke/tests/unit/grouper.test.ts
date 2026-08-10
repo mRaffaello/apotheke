@@ -59,29 +59,9 @@ describe('groupImports', () => {
         expect(others?.imports).toHaveLength(1);
     });
 
-    test('side-effect imports go to SideEffects group first', () => {
-        const imports = [makeImport('./styles.css', { isSideEffect: true })];
-        const result = groupImports(imports, config);
-        const se = result.find(g => g.name === 'SideEffects');
-        expect(se?.imports).toHaveLength(1);
-    });
-
-    test('SideEffects group appears before all others', () => {
-        const imports = [makeImport('react'), makeImport('./styles.css', { isSideEffect: true })];
-        const result = groupImports(imports, config);
-        expect(result[0]?.name).toBe('SideEffects');
-    });
-
-    test('SideEffects bucket keeps source order', () => {
-        const imports = [
-            makeImport('./z.css', { isSideEffect: true }),
-            makeImport('react'),
-            makeImport('./a.css', { isSideEffect: true })
-        ];
-        const result = groupImports(imports, config);
-        const se = result.find(g => g.name === 'SideEffects');
-        expect(se?.imports.map(n => n.specifier)).toEqual(['./z.css', './a.css']);
-    });
+    // Side-effect imports never reach the grouper — format holds them in place
+    // as barriers and only hands it spans of value imports. Their ordering is
+    // covered in format.test.ts.
 
     test('Others group appears last', () => {
         const imports = [makeImport('some-lib'), makeImport('react')];
