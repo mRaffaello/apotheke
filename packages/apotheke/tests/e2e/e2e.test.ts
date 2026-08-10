@@ -25,19 +25,40 @@ const TREMOR = path.join(REPOS, 'tremor');
 // ─── fixture setup ────────────────────────────────────────────────────────────
 
 const FIXTURE_REPOS = [
-    { name: 'sonner', url: 'https://github.com/emilkowalski/sonner.git', dir: SONNER },
-    { name: 'tremor', url: 'https://github.com/tremorlabs/tremor.git', dir: TREMOR }
+    {
+        name: 'sonner',
+        url: 'https://github.com/emilkowalski/sonner.git',
+        dir: SONNER,
+        commit: SONNER_COMMIT
+    },
+    {
+        name: 'tremor',
+        url: 'https://github.com/tremorlabs/tremor.git',
+        dir: TREMOR,
+        commit: TREMOR_COMMIT
+    }
 ];
 
 beforeAll(() => {
     fs.mkdirSync(REPOS, { recursive: true });
     for (const repo of FIXTURE_REPOS) {
-        if (!fs.existsSync(path.join(repo.dir, 'package.json'))) {
-            console.log(`  cloning ${repo.name}...`);
-            execFileSync('git', ['clone', '--depth', '1', repo.url, repo.dir], {
-                stdio: 'inherit'
-            });
-        }
+        if (fs.existsSync(path.join(repo.dir, 'package.json'))) continue;
+
+        // Fetch the pinned commit by hash rather than cloning the default branch:
+        // a shallow clone lands on whatever the branch tip is today, so the pins
+        // only held for as long as upstream did not push.
+        console.log(`  fetching ${repo.name} at ${repo.commit.slice(0, 7)}...`);
+        fs.mkdirSync(repo.dir, { recursive: true });
+        execFileSync('git', ['init', '--quiet', repo.dir], { stdio: 'inherit' });
+        execFileSync('git', ['-C', repo.dir, 'remote', 'add', 'origin', repo.url], {
+            stdio: 'inherit'
+        });
+        execFileSync('git', ['-C', repo.dir, 'fetch', '--depth', '1', 'origin', repo.commit], {
+            stdio: 'inherit'
+        });
+        execFileSync('git', ['-C', repo.dir, 'checkout', '--quiet', 'FETCH_HEAD'], {
+            stdio: 'inherit'
+        });
     }
 }, 120_000);
 
