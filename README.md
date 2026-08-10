@@ -1,12 +1,8 @@
 <p align="left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/wordmark-dark.png" />
-    <img alt="apotheke" src="https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/wordmark.png" width="320" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=apotheke&subtitle=Deterministic%20import%20organization%20for%20JavaScript%20and%20TypeScript&logo=https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/mark-dark.png&align=left&font=geist&mode=dark" />
+    <img alt="apotheke — deterministic import organization for JavaScript and TypeScript" src="https://shieldcn.dev/header/graph.svg?title=apotheke&subtitle=Deterministic%20import%20organization%20for%20JavaScript%20and%20TypeScript&logo=https://raw.githubusercontent.com/mRaffaello/apotheke/main/apps/docs/public/mark.png&align=left&font=geist&mode=light" />
   </picture>
-</p>
-
-<p align="left">
-  <em>Deterministic import organization for JavaScript and TypeScript.</em>
 </p>
 
 <p align="left">
