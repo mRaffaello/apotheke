@@ -1,7 +1,7 @@
 // Internal
 import type { ApothekeConfig, ImportNode } from './types';
 import { deduplicateImports } from './deduplicator';
-import { groupImports } from './grouper';
+import { groupImports, SIDE_EFFECTS_GROUP } from './grouper';
 import { parseImports } from './parser';
 import { detectQuoteChar, printGroups } from './printer';
 import { sortGroup, sortNamedImports } from './sorter';
@@ -57,8 +57,12 @@ export function formatImports(
     // Group
     const grouped = groupImports(sorted, config, options);
 
-    // Sort within each group
-    const sortedGroups = grouped.map(g => ({ ...g, imports: sortGroup(g.imports) }));
+    // Sort within each group, except SideEffects. Their order is load-bearing:
+    // the CSS cascade and polyfill evaluation both follow import order, so
+    // alphabetising them would silently change what the bundle does.
+    const sortedGroups = grouped.map(g =>
+        g.name === SIDE_EFFECTS_GROUP ? g : { ...g, imports: sortGroup(g.imports) }
+    );
 
     // Print the new import block
     const q = detectQuoteChar(source);

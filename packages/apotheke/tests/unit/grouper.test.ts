@@ -72,6 +72,17 @@ describe('groupImports', () => {
         expect(result[0]?.name).toBe('SideEffects');
     });
 
+    test('SideEffects bucket keeps source order', () => {
+        const imports = [
+            makeImport('./z.css', { isSideEffect: true }),
+            makeImport('react'),
+            makeImport('./a.css', { isSideEffect: true })
+        ];
+        const result = groupImports(imports, config);
+        const se = result.find(g => g.name === 'SideEffects');
+        expect(se?.imports.map(n => n.specifier)).toEqual(['./z.css', './a.css']);
+    });
+
     test('Others group appears last', () => {
         const imports = [makeImport('some-lib'), makeImport('react')];
         const result = groupImports(imports, config);

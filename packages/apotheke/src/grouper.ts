@@ -4,6 +4,10 @@ import path from 'node:path';
 // Internal
 import type { ApothekeConfig, GroupedImports, ImportNode } from './types';
 
+// Implicit groups, not user-definable: SideEffects leads, Others trails.
+export const SIDE_EFFECTS_GROUP = 'SideEffects';
+export const OTHERS_GROUP = 'Others';
+
 interface GroupOptions {
     fileDir?: string;
     rootDir?: string;
@@ -24,9 +28,9 @@ export function groupImports(
 
     const result: GroupedImports[] = [];
 
-    // SideEffects always first
-    if (buckets.has('SideEffects')) {
-        result.push({ name: 'SideEffects', imports: buckets.get('SideEffects')! });
+    // SideEffects always first, in source order
+    if (buckets.has(SIDE_EFFECTS_GROUP)) {
+        result.push({ name: SIDE_EFFECTS_GROUP, imports: buckets.get(SIDE_EFFECTS_GROUP)! });
     }
 
     // User-defined groups in config order
@@ -37,15 +41,15 @@ export function groupImports(
     }
 
     // Others always last
-    if (buckets.has('Others')) {
-        result.push({ name: 'Others', imports: buckets.get('Others')! });
+    if (buckets.has(OTHERS_GROUP)) {
+        result.push({ name: OTHERS_GROUP, imports: buckets.get(OTHERS_GROUP)! });
     }
 
     return result;
 }
 
 function assignGroup(node: ImportNode, config: ApothekeConfig, options: GroupOptions): string {
-    if (node.isSideEffect) return 'SideEffects';
+    if (node.isSideEffect) return SIDE_EFFECTS_GROUP;
 
     const canonicalPath = resolveCanonicalPath(node.specifier, config, options);
 
@@ -56,7 +60,7 @@ function assignGroup(node: ImportNode, config: ApothekeConfig, options: GroupOpt
         }
     }
 
-    return 'Others';
+    return OTHERS_GROUP;
 }
 
 function resolveCanonicalPath(

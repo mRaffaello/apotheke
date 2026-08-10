@@ -76,6 +76,35 @@ const x = 1;
         expect(lines[0]).toBe(`import './styles.css';`);
     });
 
+    test('keeps side-effect imports in source order, not alphabetical', () => {
+        // The CSS cascade follows import order: sorting these would let the
+        // overrides lose to the framework sheet they are meant to override.
+        const source =
+            [
+                `import './tailwind.css';`,
+                `import { useMemo } from 'react';`,
+                `import './overrides.css';`
+            ].join('\n') + '\n';
+
+        const result = formatImports(source, config);
+        const sideEffects = result.split('\n').filter(l => l.startsWith(`import '.`));
+        expect(sideEffects).toEqual([`import './tailwind.css';`, `import './overrides.css';`]);
+    });
+
+    test('keeps side-effect evaluation order when it runs against the alphabet', () => {
+        // Instrumentation has to be evaluated before the polyfills it patches over.
+        const source =
+            [
+                `import './sentry-instrument';`,
+                `import './polyfills';`,
+                `import React from 'react';`
+            ].join('\n') + '\n';
+
+        const result = formatImports(source, config);
+        const sideEffects = result.split('\n').filter(l => /^import '[^']+';$/.test(l));
+        expect(sideEffects).toEqual([`import './sentry-instrument';`, `import './polyfills';`]);
+    });
+
     test('unmatched imports go to Others', () => {
         const source = `import { t } from 'i18next';\nimport React from 'react';\n`;
         const result = formatImports(source, config);
