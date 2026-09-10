@@ -174,9 +174,13 @@ export function formatImports(
     let regionStart = firstImport.start;
     if (firstImport.attachedCommentStart !== undefined) {
         regionStart = source.lastIndexOf('\n', firstImport.attachedCommentStart) + 1;
-    } else {
-        regionStart = strandedHeaderStart(source, firstImport.start, headers) ?? regionStart;
     }
+    // Keep walking past whatever the attached comment was, so a header left
+    // over from an earlier run is swallowed too rather than left standing above
+    // the one printed to replace it. Reading only the line directly above the
+    // import cleared one copy per run and never the copies above it, so a file
+    // that had picked up a duplicate kept it for good.
+    regionStart = strandedHeaderStart(source, regionStart, headers) ?? regionStart;
 
     // Expand end to consume the newline after the last import
     let regionEnd = lastImport.end;

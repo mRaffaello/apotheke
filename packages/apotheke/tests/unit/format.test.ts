@@ -510,6 +510,48 @@ describe('formatImports: a header separated from its import does not accumulate'
         expect(result.split('// Others').length - 1).toBe(1);
     });
 
+    test('a duplicate header left above the block is cleared, not kept', () => {
+        const duplicated =
+            [
+                '// Others',
+                '',
+                '// Others',
+                "import js from '@eslint/js';",
+                "import globals from 'globals';",
+                '',
+                'export default 1;'
+            ].join('\n') + '\n';
+
+        expect(formatImports(duplicated, orpcConfig).split('// Others').length - 1).toBe(1);
+    });
+
+    test('duplicate headers on consecutive lines are cleared too', () => {
+        const stacked =
+            [
+                '// Others',
+                '// Others',
+                '// Others',
+                "import js from '@eslint/js';",
+                '',
+                'export default 1;'
+            ].join('\n') + '\n';
+
+        expect(formatImports(stacked, orpcConfig).split('// Others').length - 1).toBe(1);
+    });
+
+    test('a licence banner directly above a header still survives', () => {
+        const licensed =
+            [
+                '// Copyright 2026 Acme',
+                '// Others',
+                "import js from '@eslint/js';",
+                '',
+                'export default 1;'
+            ].join('\n') + '\n';
+
+        expect(formatImports(licensed, orpcConfig)).toContain('// Copyright 2026 Acme');
+    });
+
     test('a comment that is not a header is still carried out, not dropped', () => {
         const note =
             [
