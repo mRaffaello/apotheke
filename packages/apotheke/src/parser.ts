@@ -71,6 +71,12 @@ function findAttachedComment(
 
     for (const comment of comments) {
         if (comment.type !== 'Line') continue;
+        // A triple-slash directive is an instruction to the compiler, not a
+        // section header someone typed. Attaching it would hand it to the block
+        // apotheke rewrites, and every attached comment is dropped there — which
+        // is how next-env.d.ts lost one `/// <reference types="next" />` per save
+        // until the file had none left and the project's types went with them.
+        if (comment.value.startsWith('/')) continue;
         const commentLines = source.slice(0, comment.end).split('\n');
         const commentLine = commentLines.length - 1;
         // Comment must be on the immediately preceding line with no blank line between

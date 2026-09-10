@@ -78,6 +78,12 @@ describe('parseImports', () => {
         expect(result[0]?.attachedCommentStart).toBe(0);
     });
 
+    test('does not attach a triple-slash directive', () => {
+        const src = `/// <reference types="next" />\nimport React from 'react';`;
+        const result = parseImports(src);
+        expect(result[0]?.attachedCommentStart).toBeUndefined();
+    });
+
     test('does not attach comment separated by blank line', () => {
         const src = `// React stuff\n\nimport React from 'react';`;
         const result = parseImports(src);

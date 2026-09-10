@@ -405,3 +405,51 @@ describe('formatImports: repeated runs never accumulate group headers', () => {
         expect(afterImports.trim()).toBe('export const contract = {};');
     });
 });
+
+// ── regression: triple-slash directives are not section headers ───────────────
+//
+// The line above the first import is taken for a header and dropped, since
+// apotheke prints its own. A /// directive is not one: it configures the
+// compiler, and next-env.d.ts kept one fewer reference after every save.
+
+describe('formatImports: triple-slash directives survive', () => {
+    const source =
+        [
+            '/// <reference types="next" />',
+            '/// <reference types="next/image-types/global" />',
+            "import './.next/types/routes.d.ts';",
+            '',
+            '// NOTE: This file should not be edited'
+        ].join('\n') + '\n';
+
+    test('every directive above the first import is kept', () => {
+        const result = formatImports(source, config);
+
+        expect(result).toContain('/// <reference types="next" />');
+        expect(result).toContain('/// <reference types="next/image-types/global" />');
+    });
+
+    test('none is lost however many times the file is saved', () => {
+        let result = source;
+        for (let i = 0; i < 5; i++) result = formatImports(result, config);
+
+        expect(result.split('/// <reference').length - 1).toBe(2);
+    });
+
+    test('directives stay above the import block', () => {
+        const result = formatImports(source, config);
+        const lines = result.split('\n');
+
+        expect(lines[0]).toBe('/// <reference types="next" />');
+        expect(lines[1]).toBe('/// <reference types="next/image-types/global" />');
+        expect(lines[2]).toBe("import './.next/types/routes.d.ts';");
+    });
+
+    test('a header apotheke wrote is still dropped', () => {
+        const headered =
+            ['// Models', "import { Foo } from '../models/foo';", '', 'class X {}'].join('\n') +
+            '\n';
+
+        expect(formatImports(headered, config)).not.toContain('// Models');
+    });
+});
