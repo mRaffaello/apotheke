@@ -453,3 +453,111 @@ describe('formatImports: triple-slash directives survive', () => {
         expect(formatImports(headered, config)).not.toContain('// Models');
     });
 });
+
+// ── regression: a header a blank line hid must not pile up ────────────────────
+//
+// apotheke recognises its own header only directly above its import. An editor
+// rule or a second formatter that puts a blank line under one hides it, and the
+// hidden copy was then carried out below the block, or left standing above it,
+// while a fresh header was printed — one more copy of it after every save.
+
+describe('formatImports: a header separated from its import does not accumulate', () => {
+    const orpcConfig: ApothekeConfig = {
+        groups: [{ name: 'Orpc', match: ['@orpc/*'] }],
+        groupSeparator: true,
+        groupComments: true
+    };
+
+    // What the file looks like once something has inserted the blank lines
+    const hidden =
+        [
+            '// Orpc',
+            '',
+            "import { oc } from '@orpc/contract';",
+            '',
+            '// Others',
+            '',
+            "import { schema } from './schemas/data-map.schema';",
+            "import { z } from 'zod';",
+            '',
+            'export const contract = {};'
+        ].join('\n') + '\n';
+
+    test('a hidden header is not carried out below the import block', () => {
+        const result = formatImports(hidden, orpcConfig);
+        const [, afterImports = ''] = result.split("import { z } from 'zod';");
+
+        expect(afterImports.trim()).toBe('export const contract = {};');
+    });
+
+    test('a hidden header is not left standing above the one that replaces it', () => {
+        const result = formatImports(hidden, orpcConfig);
+
+        expect(result.split('// Orpc').length - 1).toBe(1);
+        expect(result.indexOf('// Orpc')).toBe(0);
+    });
+
+    test('saves that keep re-inserting the blank lines add nothing', () => {
+        let result = hidden;
+        for (let i = 0; i < 5; i++) {
+            result = formatImports(result, orpcConfig);
+            // stands in for whatever puts the blank line back: an eslint rule
+            // such as lines-around-comment, another formatter, an editor action
+            result = result.replace(/(\/\/ [A-Za-z]+)\n(import)/g, '$1\n\n$2');
+        }
+
+        expect(result.split('// Orpc').length - 1).toBe(1);
+        expect(result.split('// Others').length - 1).toBe(1);
+    });
+
+    test('a comment that is not a header is still carried out, not dropped', () => {
+        const note =
+            [
+                "import { a } from './a';",
+                '',
+                '// keep me: explains the import below',
+                '',
+                "import { b } from './b';",
+                '',
+                'export const y = 2;'
+            ].join('\n') + '\n';
+
+        expect(formatImports(note, orpcConfig)).toContain('// keep me: explains the import below');
+    });
+
+    test('a licence banner above the block survives', () => {
+        const licensed =
+            [
+                '// Copyright 2026 Acme',
+                '// SPDX-License-Identifier: MIT',
+                '',
+                "import { z } from 'zod';",
+                '',
+                'export const y = 2;'
+            ].join('\n') + '\n';
+
+        const result = formatImports(licensed, orpcConfig);
+
+        expect(result).toContain('// Copyright 2026 Acme');
+        expect(result).toContain('// SPDX-License-Identifier: MIT');
+    });
+
+    test('stray code between imports is still carried out, comments included', () => {
+        const withCode =
+            [
+                "import { a } from './a';",
+                '',
+                '// explain why',
+                'const x = 1;',
+                '',
+                "import { b } from './b';",
+                '',
+                'export const y = 2;'
+            ].join('\n') + '\n';
+
+        const result = formatImports(withCode, orpcConfig);
+
+        expect(result).toContain('// explain why');
+        expect(result).toContain('const x = 1;');
+    });
+});

@@ -5,9 +5,60 @@ import { groupImports } from './grouper';
 import { parseImports } from './parser';
 import { detectQuoteChar, printGroups } from './printer';
 import { sortGroup, sortNamedImports } from './sorter';
-import { SIDE_EFFECTS_BLOCK } from './types';
+import { OTHERS_GROUP, SIDE_EFFECTS_BLOCK } from './types';
 
-function collectOrphanSegments(source: string, imports: ImportNode[]): string[] {
+// The headers apotheke prints: `// GroupName` for every configured group, plus
+// the implicit Others. A comment matching one of these came out of apotheke
+// rather than off someone's keyboard, which is what makes it safe to drop —
+// a licence banner or a note never matches, and is left alone.
+function printedHeaders(config: ApothekeConfig): Set<string> {
+    return new Set([...config.groups.map(group => `// ${group.name}`), `// ${OTHERS_GROUP}`]);
+}
+
+// A header is recognised as one only while it sits directly above its import.
+// Anything that puts a blank line under it — an editor rule, a second formatter
+// — hides it there, and a hidden header is worse than a missed one: it gets
+// carried out below the block, or left standing above it, while a fresh header
+// is printed for the same group, so the file gains a copy on every save.
+function isStrandedHeaders(segment: string, headers: Set<string>): boolean {
+    const lines = segment.split('\n').filter(line => line.trim() !== '');
+    return lines.length > 0 && lines.every(line => headers.has(line.trim()));
+}
+
+// Walk back over the blank lines and stranded headers directly above the first
+// import and report where they start, so they are replaced along with the rest
+// of the block rather than left sitting above the header printed to succeed
+// them. Stops at the first line that is neither, which is what keeps a licence
+// banner or a file docblock out of the region.
+function strandedHeaderStart(
+    source: string,
+    importStart: number,
+    headers: Set<string>
+): number | undefined {
+    let start: number | undefined;
+    let lineEnd = source.lastIndexOf('\n', importStart - 1);
+
+    while (lineEnd > -1) {
+        const lineStart = source.lastIndexOf('\n', lineEnd - 1) + 1;
+        const line = source.slice(lineStart, lineEnd).trim();
+
+        if (line !== '') {
+            if (!headers.has(line)) break;
+            start = lineStart;
+        }
+
+        if (lineStart === 0) break;
+        lineEnd = lineStart - 1;
+    }
+
+    return start;
+}
+
+function collectOrphanSegments(
+    source: string,
+    imports: ImportNode[],
+    headers: Set<string>
+): string[] {
     const orphans: string[] = [];
     for (let i = 0; i < imports.length - 1; i++) {
         const gapStart = imports[i]!.end;
@@ -25,7 +76,7 @@ function collectOrphanSegments(source: string, imports: ImportNode[]): string[] 
                 ? commentStart
                 : gapEnd;
         const trimmed = source.slice(gapStart, cut).trim();
-        if (trimmed) orphans.push(trimmed);
+        if (trimmed && !isStrandedHeaders(trimmed, headers)) orphans.push(trimmed);
     }
     return orphans;
 }
@@ -94,7 +145,8 @@ export function formatImports(
     if (imports.length === 0) return source;
 
     // Collect orphans before stripping comments (needs original comment positions)
-    const orphans = collectOrphanSegments(source, imports);
+    const headers = printedHeaders(config);
+    const orphans = collectOrphanSegments(source, imports, headers);
 
     // Strip attached comments — the import block is fully owned by apotheke.
     // Old manual section headers (// Models, // Providers, etc.) are dropped so
@@ -122,6 +174,8 @@ export function formatImports(
     let regionStart = firstImport.start;
     if (firstImport.attachedCommentStart !== undefined) {
         regionStart = source.lastIndexOf('\n', firstImport.attachedCommentStart) + 1;
+    } else {
+        regionStart = strandedHeaderStart(source, firstImport.start, headers) ?? regionStart;
     }
 
     // Expand end to consume the newline after the last import
