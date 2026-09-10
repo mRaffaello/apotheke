@@ -85,15 +85,15 @@ describe('deduplicateImports', () => {
         expect(result).toHaveLength(1);
     });
 
-    test('preserves attachedComment of first occurrence', () => {
+    test('preserves the attached comment of first occurrence', () => {
         const imports = [
             makeImport('./utils', {
-                attachedComment: '// Utils',
+                attachedCommentStart: 0,
                 namedImports: [{ name: 'foo', kind: 'value' }]
             }),
             makeImport('./utils', { namedImports: [{ name: 'bar', kind: 'value' }] })
         ];
         const result = deduplicateImports(imports);
-        expect(result[0]?.attachedComment).toBe('// Utils');
+        expect(result[0]?.attachedCommentStart).toBe(0);
     });
 });

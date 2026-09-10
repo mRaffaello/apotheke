@@ -52,7 +52,7 @@ export function parseImports(source: string): ImportNode[] {
         if (namespaceImport) importNode.namespaceImport = namespaceImport;
 
         const attached = findAttachedComment(source, node.start as number, comments);
-        if (attached) importNode.attachedComment = attached;
+        if (attached !== undefined) importNode.attachedCommentStart = attached;
 
         nodes.push(importNode);
     }
@@ -64,7 +64,7 @@ function findAttachedComment(
     source: string,
     importStart: number,
     comments: Array<{ type: string; value: string; start: number; end: number }>
-): string | undefined {
+): number | undefined {
     // Find line number of the import
     const linesBefore = source.slice(0, importStart).split('\n');
     const importLine = linesBefore.length - 1;
@@ -75,7 +75,7 @@ function findAttachedComment(
         const commentLine = commentLines.length - 1;
         // Comment must be on the immediately preceding line with no blank line between
         if (commentLine === importLine - 1) {
-            return `//${comment.value}`;
+            return comment.start;
         }
     }
 

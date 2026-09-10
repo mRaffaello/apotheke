@@ -254,7 +254,7 @@ describe('orphan preservation', () => {
 
 // ── regression: manual section comments stripped ──────────────────────────────
 
-describe('attachedComment stripping', () => {
+describe('attached comment stripping', () => {
     test('pre-existing manual section headers are removed from output', () => {
         const source =
             [
@@ -350,5 +350,58 @@ describe('formatImports: quote style preserved', () => {
         const result = formatImports(source, config);
         expect(result).toContain(`from '@scope/a'`);
         expect(result).not.toContain(`from "`);
+    });
+});
+
+// ── regression: group headers must survive their own round trip ───────────────
+//
+// A header apotheke printed is re-read on the next run as the attached comment
+// of the import below it. When that read failed, the header was taken for stray
+// code, moved below the import block, and printed fresh — so every save left one
+// more copy of it under the imports.
+
+describe('formatImports: repeated runs never accumulate group headers', () => {
+    const leadingSpaceConfig: ApothekeConfig = {
+        groups: [
+            { name: 'Orpc', match: ['@orpc/*'] },
+            // A name whose printed header (`//  Internal`) does not come back as
+            // `// ` + name.trim() — the shape that used to break the round trip.
+            { name: ' Internal', match: ['./**'] }
+        ],
+        groupSeparator: true,
+        groupComments: true
+    };
+
+    const source =
+        [
+            "import { oc } from '@orpc/contract';",
+            "import { presentationSchema } from './schemas/presentation.schema';",
+            "import { z } from 'zod';",
+            '',
+            'export const contract = {};'
+        ].join('\n') + '\n';
+
+    test('output is stable across runs', () => {
+        const first = formatImports(source, leadingSpaceConfig);
+        const second = formatImports(first, leadingSpaceConfig);
+        const third = formatImports(second, leadingSpaceConfig);
+
+        expect(second).toBe(first);
+        expect(third).toBe(first);
+    });
+
+    test('each group header appears exactly once, however many runs', () => {
+        let result = source;
+        for (let i = 0; i < 5; i++) result = formatImports(result, leadingSpaceConfig);
+
+        expect(result.split('//  Internal').length - 1).toBe(1);
+        expect(result.split('// Orpc').length - 1).toBe(1);
+    });
+
+    test('a header is not left dangling below the import block', () => {
+        const twice = formatImports(formatImports(source, leadingSpaceConfig), leadingSpaceConfig);
+        const [, afterImports = ''] = twice.split("import { z } from 'zod';");
+
+        expect(afterImports.trim()).toBe('export const contract = {};');
     });
 });

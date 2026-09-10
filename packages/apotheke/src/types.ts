@@ -11,7 +11,11 @@ export interface ImportNode {
     namedImports: NamedImport[];
     isSideEffect: boolean;
     importKind: 'value' | 'type';
-    attachedComment?: string;
+    // Offset of the `//` of the comment sitting on the line directly above this
+    // import — a position, not text: the gap between two imports is cut at this
+    // offset, so the comment is removed exactly as written rather than matched
+    // against a re-spelled copy of itself.
+    attachedCommentStart?: number;
     start: number;
     end: number;
 }

@@ -13,16 +13,18 @@ function collectOrphanSegments(source: string, imports: ImportNode[]): string[] 
         const gapStart = imports[i]!.end;
         const gapEnd = imports[i + 1]!.start;
         if (gapEnd <= gapStart) continue;
-        let gap = source.slice(gapStart, gapEnd);
-        // Strip attached comment of the next import from the tail of the gap
-        const nextComment = imports[i + 1]!.attachedComment;
-        if (nextComment) {
-            const commentText = nextComment.startsWith('//') ? nextComment.slice(2) : nextComment;
-            const commentPattern = `// ${commentText.trim()}`;
-            const idx = gap.lastIndexOf(commentPattern);
-            if (idx !== -1) gap = gap.slice(0, idx);
-        }
-        const trimmed = gap.trim();
+        // Cut the gap where the next import's attached comment starts: apotheke
+        // reprints that header itself, so anything from there on is already
+        // accounted for. Cutting by offset rather than by searching for a
+        // rebuilt `// Name` keeps the match exact — a header whose spelling did
+        // not survive the round trip used to be read as stray code, moved below
+        // the block, and reprinted, adding one copy per run.
+        const commentStart = imports[i + 1]!.attachedCommentStart;
+        const cut =
+            commentStart !== undefined && commentStart >= gapStart && commentStart < gapEnd
+                ? commentStart
+                : gapEnd;
+        const trimmed = source.slice(gapStart, cut).trim();
         if (trimmed) orphans.push(trimmed);
     }
     return orphans;
@@ -97,7 +99,7 @@ export function formatImports(
     // Strip attached comments — the import block is fully owned by apotheke.
     // Old manual section headers (// Models, // Providers, etc.) are dropped so
     // the printer can regenerate clean headers from the config group names.
-    const clean = imports.map(n => ({ ...n, attachedComment: undefined }));
+    const clean = imports.map(n => ({ ...n, attachedCommentStart: undefined }));
 
     // Deduplicate
     const deduped = deduplicateImports(clean);
@@ -118,10 +120,8 @@ export function formatImports(
 
     // Expand start back to include any comment on the line immediately before the first import
     let regionStart = firstImport.start;
-    if (firstImport.attachedComment) {
-        const before = source.slice(0, firstImport.start);
-        const commentLineStart = before.lastIndexOf('\n', before.length - 2) + 1;
-        regionStart = commentLineStart;
+    if (firstImport.attachedCommentStart !== undefined) {
+        regionStart = source.lastIndexOf('\n', firstImport.attachedCommentStart) + 1;
     }
 
     // Expand end to consume the newline after the last import

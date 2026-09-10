@@ -75,13 +75,13 @@ describe('parseImports', () => {
     test('attaches comment immediately above import (no blank line)', () => {
         const src = `// React stuff\nimport React from 'react';`;
         const result = parseImports(src);
-        expect(result[0]?.attachedComment).toBe('// React stuff');
+        expect(result[0]?.attachedCommentStart).toBe(0);
     });
 
     test('does not attach comment separated by blank line', () => {
         const src = `// React stuff\n\nimport React from 'react';`;
         const result = parseImports(src);
-        expect(result[0]?.attachedComment).toBeUndefined();
+        expect(result[0]?.attachedCommentStart).toBeUndefined();
     });
 
     test('attaches comment to correct import when multiple', () => {
@@ -91,8 +91,8 @@ describe('parseImports', () => {
             `import { helper } from '../utils';`
         ].join('\n');
         const result = parseImports(src);
-        expect(result[0]?.attachedComment).toBeUndefined();
-        expect(result[1]?.attachedComment).toBe('// Utils');
+        expect(result[0]?.attachedCommentStart).toBeUndefined();
+        expect(result[1]?.attachedCommentStart).toBe(src.indexOf('// Utils'));
     });
 
     test('skips non-import statements', () => {

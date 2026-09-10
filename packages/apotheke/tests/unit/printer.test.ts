@@ -77,10 +77,10 @@ describe('printImportNode', () => {
         expect(printImportNode(node)).toBe(`import { foo as bar } from './utils';`);
     });
 
-    test('ignores attachedComment — printer never emits legacy section headers', () => {
+    test('ignores attachedCommentStart — printer never emits legacy section headers', () => {
         const node = makeImport('react', {
             defaultImport: 'React',
-            attachedComment: '// React stuff'
+            attachedCommentStart: 0
         });
         expect(printImportNode(node)).toBe(`import React from 'react';`);
     });
@@ -131,10 +131,10 @@ describe('printGroups', () => {
         );
     });
 
-    test('always uses group.name as header, even when import has attachedComment', () => {
+    test('always uses group.name as header, even when import has an attached comment', () => {
         const node = makeImport('react', {
             defaultImport: 'React',
-            attachedComment: '// My React'
+            attachedCommentStart: 0
         });
         const groups: GroupedImports[] = [{ name: 'React', imports: [node] }];
         const result = printGroups(groups, defaultConfig);
